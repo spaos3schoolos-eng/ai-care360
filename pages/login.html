@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>เข้าสู่ระบบ | AI CARE 360</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#4facfe,#00c6ff,#6a11cb);
+}
+
+.login-box{
+    width:420px;
+    background:white;
+    padding:40px;
+    border-radius:20px;
+    box-shadow:0 15px 35px rgba(0,0,0,.2);
+}
+
+h1{
+    text-align:center;
+    color:#1e88e5;
+    margin-bottom:10px;
+}
+
+p{
+    text-align:center;
+    color:#666;
+    margin-bottom:30px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:20px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#1e88e5;
+    color:white;
+    font-size:17px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+button:hover{
+    background:#1565c0;
+}
+
+.back{
+    margin-top:15px;
+    background:#757575;
+}
+
+.back:hover{
+    background:#555;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="login-box">
+
+<h1>🔐 เข้าสู่ระบบ</h1>
+
+<p>สำหรับครูและผู้บริหาร</p>
+
+<label>ชื่อผู้ใช้</label>
+<input
+type="text"
+id="username"
+placeholder="กรอกชื่อผู้ใช้"
+>
+
+<label>รหัสผ่าน</label>
+<input
+type="password"
+id="password"
+placeholder="กรอกรหัสผ่าน"
+>
+
+<button onclick="login()">
+เข้าสู่ระบบ
+</button>
+
+<button
+class="back"
+onclick="location.href='index.html'">
+กลับหน้าหลัก
+</button>
+
+</div>
+
+<script>
+
+const users = [
+
+{
+    username:"admin",
+    password:"1234",
+    role:"admin"
+},
+
+{
+    username:"teacher",
+    password:"1234",
+    role:"teacher"
+}
+
+];
+
+function login(){
+
+const username =
+document.getElementById("username").value.trim();
+
+const password =
+document.getElementById("password").value.trim();
+
+const user = users.find(item =>
+item.username===username &&
+item.password===password
+);
+
+if(user){
+
+localStorage.setItem(
+"loginUser",
+JSON.stringify(user)
+);
+
+window.location.href="dashboard.html";
+
+}else{
+
+alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

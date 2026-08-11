@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI CARE 360</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#4facfe,#00c6ff,#6a11cb);
+}
+
+.card{
+    width:500px;
+    padding:45px;
+    background:rgba(255,255,255,.15);
+    backdrop-filter:blur(18px);
+    border-radius:25px;
+    text-align:center;
+    color:white;
+    box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+
+.card h1{
+    font-size:42px;
+    margin-bottom:15px;
+}
+
+.card p{
+    font-size:18px;
+    margin-bottom:35px;
+}
+
+.btn{
+    display:block;
+    width:100%;
+    padding:16px;
+    margin-top:18px;
+    border:none;
+    border-radius:50px;
+    font-size:18px;
+    cursor:pointer;
+    transition:.3s;
+    font-weight:bold;
+}
+
+.assessment{
+    background:#28a745;
+    color:white;
+}
+
+.assessment:hover{
+    background:#218838;
+}
+
+.login{
+    background:white;
+    color:#1e88e5;
+}
+
+.login:hover{
+    background:#f0f0f0;
+}
+
+.footer{
+    margin-top:30px;
+    font-size:14px;
+    opacity:.9;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>🤖 AI CARE 360</h1>
+
+<p>
+ระบบดูแลสุขภาพจิตนักเรียนด้วย AI
+</p>
+
+<button
+class="btn assessment"
+onclick="location.href='assessment.html'">
+📝 ทำแบบประเมิน
+</button>
+
+<button
+class="btn login"
+onclick="location.href='login.html'">
+🔐 เข้าสู่ระบบครู / ผู้บริหาร
+</button>
+
+<div class="footer">
+AI CARE 360 © 2026
+</div>
+
+</div>
+
+</body>
+</html>

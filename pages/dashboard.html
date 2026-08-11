@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI CARE 360 Dashboard</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+body{
+
+background:#eef6ff;
+
+}
+
+header{
+
+height:70px;
+
+background:#1e88e5;
+
+color:white;
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+padding:0 30px;
+
+font-size:26px;
+
+font-weight:bold;
+
+}
+
+.container{
+
+display:flex;
+
+}
+
+.sidebar{
+
+width:250px;
+
+height:calc(100vh - 70px);
+
+background:white;
+
+box-shadow:3px 0 10px rgba(0,0,0,.1);
+
+padding:20px;
+
+}
+
+.sidebar h3{
+
+margin-bottom:20px;
+
+color:#1e88e5;
+
+}
+
+.sidebar a{
+
+display:block;
+
+padding:12px;
+
+margin-bottom:10px;
+
+text-decoration:none;
+
+color:#333;
+
+border-radius:10px;
+
+transition:.3s;
+
+}
+
+.sidebar a:hover{
+
+background:#1e88e5;
+
+color:white;
+
+}
+
+.main{
+
+flex:1;
+
+padding:30px;
+
+}
+
+.cards{
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:20px;
+
+}
+
+.card{
+
+background:white;
+
+padding:25px;
+
+border-radius:20px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.1);
+
+text-align:center;
+
+}
+
+.card h2{
+
+font-size:40px;
+
+color:#1e88e5;
+
+margin-top:10px;
+
+}
+
+.chart{
+
+margin-top:35px;
+
+background:white;
+
+padding:30px;
+
+border-radius:20px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.1);
+
+}
+
+.bar{
+
+height:25px;
+
+margin:20px 0;
+
+border-radius:30px;
+
+background:#dbeeff;
+
+overflow:hidden;
+
+}
+
+.fill1{
+    height:100%;
+    width:0%;
+    background:#42a5f5;
+    transition:0.5s;
+}
+
+.fill2{
+    height:100%;
+    width:0%;
+    background:#66bb6a;
+    transition:0.5s;
+}
+
+.fill3{
+    height:100%;
+    width:0%;
+    background:#ffa726;
+    transition:0.5s;
+}
+
+.fill4{
+    height:100%;
+    width:0%;
+    background:#ef5350;
+    transition:0.5s;
+}
+
+footer{
+
+text-align:center;
+
+margin-top:30px;
+
+color:gray;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div>🤖 AI CARE 360</div>
+
+<div id="userRole"></div>
+
+</header>
+
+<div class="container">
+
+<div class="sidebar">
+
+<h3>เมนู</h3>
+
+<a href="dashboard.html">🏠 หน้าหลัก</a>
+
+<a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
+
+<a href="assessment.html">📝 แบบประเมิน</a>
+
+<a href="statistics.html">📊 สถิติ</a>
+
+<a href="risk.html">🚨 กลุ่มเสี่ยง</a>
+
+<a href="report.html">📄 รายงาน</a>
+
+<a href="setting.html" id="settingMenu">⚙️ ตั้งค่า</a>
+<a href="#" onclick="logout()">🚪 ออกจากระบบ</a>
+
+
+</div>
+
+<div class="main">
+
+<div class="cards">
+
+<div class="card">
+นักเรียนทั้งหมด
+<h2 id="totalStudent">0</h2>
+</div>
+
+<div class="card">
+สุขภาพปกติ
+<h2 id="normalCount">0</h2>
+</div>
+
+<div class="card">
+เฝ้าระวัง
+<h2 id="watchCount">0</h2>
+</div>
+
+<div class="card">
+กลุ่มเสี่ยง + วิกฤต
+<h2 id="riskCount" style="color:red;">0</h2>
+</div>
+
+</div>
+
+<div class="chart">
+
+<h2>สรุปผลการประเมิน</h2>
+
+<br>
+
+ปกติ
+
+<div class="bar">
+    <div class="fill1" id="normalBar"></div>
+</div>
+
+เฝ้าระวัง
+
+<div class="bar">
+    <div class="fill2" id="watchBar"></div>
+</div>
+
+กลุ่มเสี่ยง
+
+<div class="bar">
+    <div class="fill3" id="mediumBar"></div>
+</div>
+
+วิกฤต
+
+<div class="bar">
+    <div class="fill4" id="highBar"></div>
+</div>
+
+</div>
+
+<footer>
+
+AI CARE 360 © 2026
+
+</footer>
+
+</div>
+
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("loginUser"));
+
+if(!user){
+    alert("กรุณาเข้าสู่ระบบ");
+    location.href="login.html";
+}
+let data = JSON.parse(localStorage.getItem("assessments")) || [];
+
+let total = data.length;
+
+let normal = 0;
+let watch = 0;
+let medium = 0;
+let high = 0;
+
+data.forEach(item => {
+
+    if(item.score >= 61){
+
+        normal++;
+
+    }else if(item.score >= 41){
+
+        watch++;
+
+    }else if(item.score >= 21){
+
+        medium++;
+
+    }else{
+
+        high++;
+
+    }
+
+});
+
+document.getElementById("totalStudent").innerHTML = total;
+document.getElementById("normalCount").innerHTML = normal;
+document.getElementById("watchCount").innerHTML = watch;
+document.getElementById("riskCount").innerHTML = medium + high;
+const normalPercent = total === 0 ? 0 : (normal / total) * 100;
+const watchPercent = total === 0 ? 0 : (watch / total) * 100;
+const mediumPercent = total === 0 ? 0 : (medium / total) * 100;
+const highPercent = total === 0 ? 0 : (high / total) * 100;
+
+document.getElementById("normalBar").style.width = normalPercent + "%";
+document.getElementById("watchBar").style.width = watchPercent + "%";
+document.getElementById("mediumBar").style.width = mediumPercent + "%";
+document.getElementById("highBar").style.width = highPercent + "%";
+if(user.role==="admin"){
+    document.getElementById("userRole").innerHTML="ผู้ดูแลระบบ";
+}else{
+    document.getElementById("userRole").innerHTML="ครู";
+}
+if(user.role!=="admin"){
+    document.getElementById("settingMenu").style.display="none";
+}
+function logout(){
+
+    localStorage.removeItem("loginUser");
+
+    location.href="index.html";
+
+}
+
+</script>
+
+</body>
+</html>

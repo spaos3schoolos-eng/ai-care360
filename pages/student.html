@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI CARE 360 - ข้อมูลนักเรียน</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+body{
+    background:#eef6ff;
+}
+
+header{
+    height:70px;
+    background:#1e88e5;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    font-size:26px;
+    font-weight:bold;
+}
+
+.container{
+    display:flex;
+}
+
+.sidebar{
+    width:250px;
+    min-height:calc(100vh - 70px);
+    background:white;
+    box-shadow:3px 0 10px rgba(0,0,0,.1);
+    padding:20px;
+}
+
+.sidebar h3{
+    color:#1e88e5;
+    margin-bottom:20px;
+}
+
+.sidebar a{
+    display:block;
+    padding:12px;
+    margin-bottom:10px;
+    text-decoration:none;
+    color:#333;
+    border-radius:10px;
+    transition:.3s;
+}
+
+.sidebar a:hover{
+    background:#1e88e5;
+    color:white;
+}
+
+.main{
+    flex:1;
+    padding:30px;
+}
+
+.title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.title h2{
+    color:#1e88e5;
+}
+
+.search{
+    width:300px;
+    padding:10px 15px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    font-size:16px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+
+th{
+    background:#1e88e5;
+    color:white;
+    padding:15px;
+}
+
+td{
+    padding:15px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+}
+
+tr:hover{
+    background:#f4f9ff;
+}
+
+.normal{
+    color:#2e7d32;
+    font-weight:bold;
+}
+
+.watch{
+    color:#f9a825;
+    font-weight:bold;
+}
+
+.medium{
+    color:#ef6c00;
+    font-weight:bold;
+}
+
+.high{
+    color:#d32f2f;
+    font-weight:bold;
+}
+
+button{
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.deleteBtn{
+    background:#e53935;
+    color:white;
+}
+
+.editBtn{
+    background:#43a047;
+    color:white;
+    margin-right:5px;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+<div>🤖 AI CARE 360</div>
+<div id="userRole"></div>
+</header>
+
+<div class="container">
+
+<div class="sidebar">
+
+<h3>เมนู</h3>
+
+<a href="dashboard.html">🏠 หน้าหลัก</a>
+<a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
+<a href="assessment.html">📝 แบบประเมิน</a>
+<a href="statistics.html">📊 สถิติ</a>
+<a href="risk.html">🚨 กลุ่มเสี่ยง</a>
+<a href="report.html">📄 รายงาน</a>
+<a href="setting.html" id="settingMenu">⚙️ ตั้งค่า</a>
+
+<a href="#" onclick="logout()">🚪 ออกจากระบบ</a>
+
+</div>
+
+<div class="main">
+
+<div class="title">
+
+<h2>ข้อมูลนักเรียน</h2>
+
+<input
+type="text"
+id="search"
+class="search"
+placeholder="ค้นหาชื่อนักเรียน..."
+>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ลำดับ</th>
+
+<th>ชื่อนักเรียน</th>
+
+<th>คะแนน</th>
+
+<th>ระดับ</th>
+
+<th>จัดการ</th>
+
+</tr>
+
+</thead>
+
+<tbody id="studentTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+<script>
+const user = JSON.parse(localStorage.getItem("loginUser"));
+
+if(!user){
+    alert("กรุณาเข้าสู่ระบบ");
+    location.href="login.html";
+}
+
+
+let data = JSON.parse(localStorage.getItem("assessments")) || [];
+
+const table = document.getElementById("studentTable");
+const search = document.getElementById("search");
+
+function getLevel(score){
+
+    if(score >= 61){
+
+        return {
+            text:"ปกติ",
+            className:"normal"
+        };
+
+    }else if(score >= 41){
+
+        return{
+            text:"เฝ้าระวัง",
+            className:"watch"
+        };
+
+    }else if(score >= 21){
+
+        return{
+            text:"กลุ่มเสี่ยง",
+            className:"medium"
+        };
+
+    }else{
+
+        return{
+            text:"วิกฤต",
+            className:"high"
+        };
+
+    }
+
+}
+
+function loadTable(list){
+
+    table.innerHTML="";
+
+    list.forEach((item,index)=>{
+
+        const level = getLevel(item.score);
+
+        const realIndex = data.indexOf(item);
+
+        table.innerHTML += `
+
+<tr>
+
+<td>${index+1}</td>
+
+<td>${item.name}</td>
+
+<td>${item.score}</td>
+
+<td class="${level.className}">
+${level.text}
+</td>
+
+<td>
+
+<button
+class="deleteBtn"
+onclick="deleteStudent(${realIndex})">
+ลบ
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+    });
+
+}
+
+loadTable(data);
+
+search.addEventListener("keyup",()=>{
+
+    const keyword = search.value.toLowerCase();
+
+    const result = data.filter(item=>{
+
+        return item.name.toLowerCase().includes(keyword);
+
+    });
+
+    loadTable(result);
+
+});
+
+function deleteStudent(index){
+
+    if(confirm("ต้องการลบข้อมูลนักเรียนหรือไม่?")){
+
+        data.splice(index,1);
+
+        localStorage.setItem(
+            "assessments",
+            JSON.stringify(data)
+        );
+
+        loadTable(data);
+
+    }
+
+}
+if(user.role==="admin"){
+    document.getElementById("userRole").innerHTML="ผู้ดูแลระบบ";
+}else{
+    document.getElementById("userRole").innerHTML="ครู";
+}
+
+if(user.role!=="admin"){
+    document.getElementById("settingMenu").style.display="none";
+}
+
+function logout(){
+
+    localStorage.removeItem("loginUser");
+
+    location.href="index.html";
+}
+
+</script>
+</body>
+
+</html>
