@@ -363,9 +363,11 @@ if (!user) {
 
 const API_URL = "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
 
-async function loadDashboard() {
+async function loadDashboard(retry = 0) {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+            cache: "no-store"
+        });
 
         if (!response.ok) {
             throw new Error("HTTP error: " + response.status);
@@ -410,18 +412,38 @@ async function loadDashboard() {
         const mediumPercent = total === 0 ? 0 : (medium / total) * 100;
         const highPercent = total === 0 ? 0 : (high / total) * 100;
 
-        document.getElementById("normalBar").style.width = normalPercent + "%";
-        document.getElementById("watchBar").style.width = watchPercent + "%";
-        document.getElementById("mediumBar").style.width = mediumPercent + "%";
-        document.getElementById("highBar").style.width = highPercent + "%";
+        document.getElementById("normalBar").style.width =
+            normalPercent + "%";
+
+        document.getElementById("watchBar").style.width =
+            watchPercent + "%";
+
+        document.getElementById("mediumBar").style.width =
+            mediumPercent + "%";
+
+        document.getElementById("highBar").style.width =
+            highPercent + "%";
 
     } catch (error) {
+
         console.error("โหลดข้อมูล Dashboard ไม่สำเร็จ:", error);
 
-        document.getElementById("totalStudent").innerHTML = "!";
-        document.getElementById("normalCount").innerHTML = "!";
-        document.getElementById("watchCount").innerHTML = "!";
-        document.getElementById("riskCount").innerHTML = "!";
+        // ถ้ายังลองไม่ครบ 3 ครั้ง
+        if (retry < 2) {
+            console.log("กำลังลองใหม่ ครั้งที่ " + (retry + 2));
+
+            setTimeout(() => {
+                loadDashboard(retry + 1);
+            }, 2000);
+
+            return;
+        }
+
+        // ลองครบ 3 ครั้งแล้วยังไม่ได้
+        document.getElementById("totalStudent").innerHTML = "โหลดไม่สำเร็จ";
+        document.getElementById("normalCount").innerHTML = "โหลดไม่สำเร็จ";
+        document.getElementById("watchCount").innerHTML = "โหลดไม่สำเร็จ";
+        document.getElementById("riskCount").innerHTML = "โหลดไม่สำเร็จ";
     }
 }
 
