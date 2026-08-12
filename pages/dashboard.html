@@ -318,50 +318,77 @@ if(!user){
     alert("กรุณาเข้าสู่ระบบ");
     location.href="login.html";
 }
-let data = JSON.parse(localStorage.getItem("assessments")) || [];
+const API_URL = "https://script.google.com/macros/s/AKfycbxveJxC0PirDbvAXrHE3ILJHn6oyhITAduOAiBiGCIZ4xhY7YoL0fpktG6ojyRjI1fkSw/exec";
 
-let total = data.length;
+async function loadDashboard() {
+    try {
+        const response = await fetch(API_URL);
 
-let normal = 0;
-let watch = 0;
-let medium = 0;
-let high = 0;
+        if (!response.ok) {
+            throw new Error("HTTP error: " + response.status);
+        }
 
-data.forEach(item => {
+        const result = await response.json();
 
-    if(item.score >= 61){
+        // รองรับทั้งกรณี API ส่ง Array โดยตรง
+        // และกรณีส่ง {data:[...]}
+        let data = Array.isArray(result)
+            ? result
+            : (Array.isArray(result.data) ? result.data : []);
 
-        normal++;
+        console.log("ข้อมูลจาก Google Sheet:", data);
 
-    }else if(item.score >= 41){
+        let total = data.length;
 
-        watch++;
+        let normal = 0;
+        let watch = 0;
+        let medium = 0;
+        let high = 0;
 
-    }else if(item.score >= 21){
+        data.forEach(item => {
 
-        medium++;
+            const score = Number(item.score) || 0;
 
-    }else{
+            if (score >= 61) {
+                normal++;
+            } else if (score >= 41) {
+                watch++;
+            } else if (score >= 21) {
+                medium++;
+            } else {
+                high++;
+            }
 
-        high++;
+        });
+
+        document.getElementById("totalStudent").innerHTML = total;
+        document.getElementById("normalCount").innerHTML = normal;
+        document.getElementById("watchCount").innerHTML = watch;
+        document.getElementById("riskCount").innerHTML = medium + high;
+
+        const normalPercent = total === 0 ? 0 : (normal / total) * 100;
+        const watchPercent = total === 0 ? 0 : (watch / total) * 100;
+        const mediumPercent = total === 0 ? 0 : (medium / total) * 100;
+        const highPercent = total === 0 ? 0 : (high / total) * 100;
+
+        document.getElementById("normalBar").style.width = normalPercent + "%";
+        document.getElementById("watchBar").style.width = watchPercent + "%";
+        document.getElementById("mediumBar").style.width = mediumPercent + "%";
+        document.getElementById("highBar").style.width = highPercent + "%";
+
+    } catch (error) {
+
+        console.error("โหลดข้อมูล Dashboard ไม่สำเร็จ:", error);
+
+        document.getElementById("totalStudent").innerHTML = "!";
+        document.getElementById("normalCount").innerHTML = "!";
+        document.getElementById("watchCount").innerHTML = "!";
+        document.getElementById("riskCount").innerHTML = "!";
 
     }
+}
 
-});
-
-document.getElementById("totalStudent").innerHTML = total;
-document.getElementById("normalCount").innerHTML = normal;
-document.getElementById("watchCount").innerHTML = watch;
-document.getElementById("riskCount").innerHTML = medium + high;
-const normalPercent = total === 0 ? 0 : (normal / total) * 100;
-const watchPercent = total === 0 ? 0 : (watch / total) * 100;
-const mediumPercent = total === 0 ? 0 : (medium / total) * 100;
-const highPercent = total === 0 ? 0 : (high / total) * 100;
-
-document.getElementById("normalBar").style.width = normalPercent + "%";
-document.getElementById("watchBar").style.width = watchPercent + "%";
-document.getElementById("mediumBar").style.width = mediumPercent + "%";
-document.getElementById("highBar").style.width = highPercent + "%";
+loadDashboard();
 if(user.role==="admin"){
     document.getElementById("userRole").innerHTML="ผู้ดูแลระบบ";
 }else{
