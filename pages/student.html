@@ -151,10 +151,13 @@ button{
 
 /* ปุ่มดูข้อมูล */
 .view-btn{
-    display:inline-block;
-    min-width:82px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:90px;
+    min-height:36px;
     background:#2e7d32;
-    color:#fff;
+    color:#fff !important;
     border:none;
     padding:8px 14px;
     border-radius:8px;
@@ -163,6 +166,8 @@ button{
     font-weight:600;
     line-height:1.2;
     white-space:nowrap;
+    text-indent:0;
+    overflow:visible;
 }
 
 .view-btn:hover{
@@ -1250,9 +1255,10 @@ function loadTable(list){
 
                 <td>
                     <button
+                        type="button"
                         class="view-btn"
                         data-student-id="${escapeHtml(item.studentId || "")}"
-data-date="${escapeHtml(item.date || "")}"
+                        data-date="${escapeHtml(item.date || "")}">
                         ดูข้อมูล
                     </button>
                 </td>
