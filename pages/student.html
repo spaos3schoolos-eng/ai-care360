@@ -147,6 +147,126 @@ button{
     color:white;
     margin-right:5px;
 }
+    /* ==============================
+   Student Detail Popup
+============================== */
+
+.modal{
+    display:none;
+    position:fixed;
+    z-index:9999;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.45);
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-content{
+    background:white;
+    width:90%;
+    max-width:520px;
+    border-radius:20px;
+    box-shadow:0 15px 40px rgba(0,0,0,.25);
+    overflow:hidden;
+    animation:popupShow .25s ease;
+}
+
+@keyframes popupShow{
+    from{
+        opacity:0;
+        transform:scale(.9);
+    }
+    to{
+        opacity:1;
+        transform:scale(1);
+    }
+}
+
+.modal-header{
+    background:#1e88e5;
+    color:white;
+    padding:20px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.modal-header h2{
+    font-size:22px;
+}
+
+.close-modal{
+    font-size:30px;
+    cursor:pointer;
+    line-height:1;
+}
+
+.modal-body{
+    padding:25px;
+}
+
+.student-info{
+    display:grid;
+    grid-template-columns:150px 1fr;
+    gap:15px;
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+}
+
+.student-info:last-child{
+    border-bottom:none;
+}
+
+.student-label{
+    font-weight:bold;
+    color:#555;
+}
+
+.student-value{
+    color:#222;
+}
+
+.level-badge{
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:20px;
+    font-weight:bold;
+}
+
+.level-badge.normal{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.level-badge.watch{
+    background:#fff8e1;
+    color:#f9a825;
+}
+
+.level-badge.medium{
+    background:#fff3e0;
+    color:#ef6c00;
+}
+
+.level-badge.high{
+    background:#ffebee;
+    color:#d32f2f;
+}
+
+.modal-footer{
+    padding:15px 25px 25px;
+    text-align:right;
+}
+
+.closeBtn{
+    background:#1e88e5;
+    color:white;
+    padding:10px 25px;
+    font-size:15px;
+}
 </style>
 
 </head>
@@ -218,6 +338,69 @@ placeholder="ค้นหาชื่อนักเรียน..."
 </table>
 
 </div>
+
+</div>
+<!-- ==============================
+     Student Detail Modal
+============================== -->
+
+<div id="studentModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2>👨‍🎓 ข้อมูลนักเรียน</h2>
+            <span class="close-modal" onclick="closeStudentModal()">&times;</span>
+        </div>
+
+        <div class="modal-body">
+
+            <div class="student-info">
+                <div class="student-label">รหัสนักเรียน</div>
+                <div class="student-value" id="modalStudentId">-</div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-label">ชื่อ-นามสกุล</div>
+                <div class="student-value" id="modalName">-</div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-label">ชั้นเรียน</div>
+                <div class="student-value" id="modalClass">-</div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-label">ห้อง</div>
+                <div class="student-value" id="modalRoom">-</div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-label">คะแนน</div>
+                <div class="student-value" id="modalScore">-</div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-label">ระดับ</div>
+                <div class="student-value">
+                    <span id="modalLevel" class="level-badge">-</span>
+                </div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-label">วันที่ประเมิน</div>
+                <div class="student-value" id="modalDate">-</div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="closeBtn" onclick="closeStudentModal()">
+                ปิด
+            </button>
+        </div>
+
+    </div>
 
 </div>
 <script>
@@ -479,15 +662,76 @@ function viewStudent(item) {
 
     const level = getLevel(item.score);
 
-    alert(
-        "ชื่อนักเรียน: " + (item.name || "-") +
-        "\nรหัสนักเรียน: " + (item.studentId || "-") +
-        "\nชั้น: " + (item.className || "-") +
-        "\nห้อง: " + (item.room || "-") +
-        "\nคะแนน: " + (item.score || 0) +
-        "\nระดับ: " + level.text
-    );
+    document.getElementById("modalStudentId").textContent =
+        item.studentId || "-";
+
+    document.getElementById("modalName").textContent =
+        item.name || "-";
+
+    document.getElementById("modalClass").textContent =
+        item.className || "-";
+
+    document.getElementById("modalRoom").textContent =
+        item.room || "-";
+
+    document.getElementById("modalScore").textContent =
+        Number(item.score) || 0;
+
+
+    // ระดับ
+    const levelElement = document.getElementById("modalLevel");
+
+    levelElement.textContent = level.text;
+
+    levelElement.className =
+        "level-badge " + level.className;
+
+
+    // วันที่ประเมิน
+    let dateText = "-";
+
+    if (item.date) {
+
+        const date = new Date(item.date);
+
+        if (!isNaN(date.getTime())) {
+
+            dateText = date.toLocaleString("th-TH", {
+                day:"2-digit",
+                month:"2-digit",
+                year:"numeric",
+                hour:"2-digit",
+                minute:"2-digit"
+            });
+        }
+    }
+
+    document.getElementById("modalDate").textContent =
+        dateText;
+
+
+    // เปิด Popup
+    document.getElementById("studentModal").style.display =
+        "flex";
 }
+
+
+function closeStudentModal() {
+
+    document.getElementById("studentModal").style.display =
+        "none";
+}
+
+
+// คลิกพื้นที่ด้านนอกเพื่อปิด Popup
+document.getElementById("studentModal")
+.addEventListener("click", function(event) {
+
+    if (event.target === this) {
+        closeStudentModal();
+    }
+
+});
 
 
 // ==========================================
