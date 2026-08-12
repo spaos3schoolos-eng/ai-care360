@@ -3,314 +3,472 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>AI CARE 360 - กลุ่มเสี่ยง</title>
 
 <style>
-
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:"Segoe UI",sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
 }
-
-body{
-background:#eef6ff;
-}
-
+body{ background:#eef6ff; }
 header{
-height:70px;
-background:#1e88e5;
-color:white;
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:0 30px;
-font-size:26px;
-font-weight:bold;
+    height:70px;
+    background:#1e88e5;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    font-size:26px;
+    font-weight:bold;
 }
-
-.container{
-display:flex;
-}
-
+.container{ display:flex; }
 .sidebar{
-width:250px;
-min-height:calc(100vh - 70px);
-background:white;
-box-shadow:3px 0 10px rgba(0,0,0,.1);
-padding:20px;
+    width:250px;
+    min-height:calc(100vh - 70px);
+    background:white;
+    box-shadow:3px 0 10px rgba(0,0,0,.1);
+    padding:20px;
 }
-
-.sidebar h3{
-margin-bottom:20px;
-color:#1e88e5;
-}
-
+.sidebar h3{ margin-bottom:20px; color:#1e88e5; }
 .sidebar a{
-display:block;
-padding:12px;
-margin-bottom:10px;
-text-decoration:none;
-color:#333;
-border-radius:10px;
-transition:.3s;
+    display:block;
+    padding:12px;
+    margin-bottom:10px;
+    text-decoration:none;
+    color:#333;
+    border-radius:10px;
+    transition:.3s;
 }
-
-.sidebar a:hover{
-background:#1e88e5;
-color:white;
-}
-
-.main{
-flex:1;
-padding:30px;
-}
-
-h2{
-color:#d32f2f;
-margin-bottom:20px;
-}
-
+.sidebar a:hover{ background:#1e88e5; color:white; }
+.main{ flex:1; padding:30px; }
+h2{ color:#d32f2f; margin-bottom:20px; }
 .search{
-width:300px;
-padding:10px;
-border:1px solid #ccc;
-border-radius:10px;
-margin-bottom:20px;
-font-size:16px;
+    width:300px;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    margin-bottom:20px;
+    font-size:16px;
 }
-
 table{
-width:100%;
-border-collapse:collapse;
-background:white;
-border-radius:15px;
-overflow:hidden;
-box-shadow:0 5px 20px rgba(0,0,0,.1);
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
 }
-
-th{
-background:#d32f2f;
-color:white;
-padding:15px;
-}
-
-td{
-padding:15px;
-text-align:center;
-border-bottom:1px solid #eee;
-}
-
-.medium{
-color:#ef6c00;
-font-weight:bold;
-}
-
-.high{
-color:#d32f2f;
-font-weight:bold;
-}
-
+th{ background:#d32f2f; color:white; padding:15px; }
+td{ padding:15px; text-align:center; border-bottom:1px solid #eee; }
+tr:hover{ background:#fff8f8; }
+.medium{ color:#ef6c00; font-weight:bold; }
+.high{ color:#d32f2f; font-weight:bold; }
 .deleteBtn{
-background:#e53935;
-color:white;
-border:none;
-padding:8px 14px;
-border-radius:8px;
-cursor:pointer;
+    background:#e53935;
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    cursor:pointer;
 }
+.deleteBtn:hover{ background:#c62828; }
+.deleteBtn:disabled{ background:#aaa; cursor:not-allowed; }
 
+@media(max-width:800px){
+    header{ padding:0 15px; font-size:20px; }
+    .sidebar{ width:180px; }
+    .main{ padding:15px; overflow-x:auto; }
+    .search{ width:100%; }
+    table{ min-width:650px; }
+}
 </style>
-
 </head>
 
 <body>
 
 <header>
-
-<div>🤖 AI CARE 360</div>
-
-<div id="userRole"></div>
-
+    <div>🤖 AI CARE 360</div>
+    <div id="userRole"></div>
 </header>
 
 <div class="container">
+    <div class="sidebar">
+        <h3>เมนู</h3>
+        <a href="dashboard.html">🏠 หน้าหลัก</a>
+        <a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
+        <a href="assessment.html">📝 แบบประเมิน</a>
+        <a href="statistics.html">📊 สถิติ</a>
+        <a href="risk.html">🚨 กลุ่มเสี่ยง</a>
+        <a href="report.html">📄 รายงาน</a>
+        <a href="setting.html" id="settingMenu">⚙️ ตั้งค่า</a>
+        <a href="#" onclick="logout()">🚪 ออกจากระบบ</a>
+    </div>
 
-<div class="sidebar">
+    <div class="main">
+        <h2>🚨 รายชื่อนักเรียนกลุ่มเสี่ยงและวิกฤต</h2>
 
-<h3>เมนู</h3>
+        <input
+            type="text"
+            id="search"
+            class="search"
+            placeholder="ค้นหาชื่อ / รหัส / ชั้นเรียน..."
+        >
 
-<a href="dashboard.html">🏠 หน้าหลัก</a>
-<a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
-<a href="assessment.html">📝 แบบประเมิน</a>
-<a href="statistics.html">📊 สถิติ</a>
-<a href="risk.html">🚨 กลุ่มเสี่ยง</a>
-<a href="report.html">📄 รายงาน</a>
-<a href="setting.html" id="settingMenu">⚙️ ตั้งค่า</a>
-<a href="#" onclick="logout()">🚪 ออกจากระบบ</a>
-
+        <table>
+            <thead>
+                <tr>
+                    <th>ลำดับ</th>
+                    <th>ชื่อ</th>
+                    <th>คะแนน</th>
+                    <th>ระดับ</th>
+                    <th>จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="riskTable">
+                <tr>
+                    <td colspan="5" style="padding:40px;color:#d32f2f;">
+                        ⏳ กำลังโหลดข้อมูลกลุ่มเสี่ยง...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="main">
-
-<h2>🚨 รายชื่อนักเรียนกลุ่มเสี่ยงและวิกฤต</h2>
-
-<input
-type="text"
-id="search"
-class="search"
-placeholder="ค้นหาชื่อนักเรียน..."
->
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>ลำดับ</th>
-<th>ชื่อ</th>
-<th>คะแนน</th>
-<th>ระดับ</th>
-<th>จัดการ</th>
-
-</tr>
-
-</thead>
-
-<tbody id="riskTable">
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
 <script>
 const user = JSON.parse(localStorage.getItem("loginUser"));
 
-if(!user){
+if (!user) {
     alert("กรุณาเข้าสู่ระบบ");
-    location.href="login.html";
+    location.href = "login.html";
 }
 
-let data = JSON.parse(localStorage.getItem("assessments")) || [];
+const API_URL =
+"https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
+
+let data = [];
 
 const table = document.getElementById("riskTable");
 const search = document.getElementById("search");
 
-function getLevel(score){
+function getLevel(score) {
+    score = Number(score) || 0;
 
-    if(score >= 21){
-
-        return{
-            text:"กลุ่มเสี่ยง",
-            className:"medium"
+    if (score >= 21 && score <= 40) {
+        return {
+            text: "กลุ่มเสี่ยง",
+            className: "medium"
         };
-
-    }else{
-
-        return{
-            text:"วิกฤต",
-            className:"high"
-        };
-
     }
 
+    if (score <= 20) {
+        return {
+            text: "วิกฤต",
+            className: "high"
+        };
+    }
+
+    return null;
 }
 
-function loadTable(list){
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
-    table.innerHTML = "";
+function showLoading() {
+    table.innerHTML = `
+        <tr>
+            <td colspan="5"
+                style="padding:40px;color:#d32f2f;font-weight:bold;">
+                ⏳ กำลังโหลดข้อมูลกลุ่มเสี่ยง...
+            </td>
+        </tr>
+    `;
+}
 
-    list.forEach((item,index)=>{
+async function loadRiskStudents(retry = 0) {
+    showLoading();
 
-        if(item.score <= 40){
+    try {
+        const response = await fetch(
+            API_URL + "?t=" + Date.now(),
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
 
-            const level = getLevel(item.score);
+        if (!response.ok) {
+            throw new Error("HTTP error: " + response.status);
+        }
 
-            // หาตำแหน่งจริงใน data
-            const realIndex = data.indexOf(item);
+        const result = await response.json();
 
-            table.innerHTML += `
+        if (Array.isArray(result)) {
+            data = result;
+        } else if (result && Array.isArray(result.data)) {
+            data = result.data;
+        } else {
+            throw new Error(
+                result?.message ||
+                "รูปแบบข้อมูลจาก API ไม่ถูกต้อง"
+            );
+        }
+
+        const riskStudents = data.filter(item => {
+            const score = Number(item.score) || 0;
+            return score <= 40;
+        });
+
+        loadTable(riskStudents);
+
+    } catch (error) {
+        console.error("โหลดข้อมูลกลุ่มเสี่ยงไม่สำเร็จ:", error);
+
+        if (retry < 1) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5"
+                        style="padding:40px;color:#f9a825;">
+                        ⏳ กำลังเชื่อมต่อใหม่...
+                    </td>
+                </tr>
+            `;
+
+            setTimeout(function () {
+                loadRiskStudents(retry + 1);
+            }, 500);
+
+            return;
+        }
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5"
+                    style="padding:40px;color:#d32f2f;">
+                    ❌ โหลดข้อมูลไม่สำเร็จ
+                    <br><br>
+                    <button
+                        onclick="loadRiskStudents()"
+                        style="
+                            background:#d32f2f;
+                            color:white;
+                            border:none;
+                            padding:10px 20px;
+                            border-radius:8px;
+                            cursor:pointer;
+                        ">
+                        ลองใหม่
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function loadTable(list) {
+    if (!Array.isArray(list)) {
+        list = [];
+    }
+
+    list = list.filter(item => {
+        const score = Number(item.score) || 0;
+        return score <= 40;
+    });
+
+    if (list.length === 0) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="5"
+                    style="padding:40px;color:#2e7d32;font-weight:bold;">
+                    ✅ ไม่พบนักเรียนกลุ่มเสี่ยงหรือวิกฤต
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const html = list.map((item, index) => {
+        const score = Number(item.score) || 0;
+        const level = getLevel(score);
+
+        const studentIdEncoded = encodeURIComponent(
+            String(item.studentId || "")
+        );
+        const dateEncoded = encodeURIComponent(
+            String(item.date || "")
+        );
+
+        return `
             <tr>
                 <td>${index + 1}</td>
-                <td>${item.name}</td>
-                <td>${item.score}</td>
+                <td>${escapeHtml(item.name || "-")}</td>
+                <td>${score}</td>
                 <td class="${level.className}">
                     ${level.text}
                 </td>
                 <td>
-                    <button
-                        class="deleteBtn"
-                        onclick="deleteStudent(${realIndex})">
-                        ลบ
-                    </button>
+                    ${
+                        user.role === "admin"
+                        ? `
+                            <button
+                                class="deleteBtn"
+                                onclick="deleteStudent(
+                                    '${studentIdEncoded}',
+                                    '${dateEncoded}',
+                                    this
+                                )">
+                                ลบ
+                            </button>
+                          `
+                        : `<span style="color:#777;">-</span>`
+                    }
                 </td>
-            </tr>`;
-        }
+            </tr>
+        `;
+    }).join("");
 
-    });
-
+    table.innerHTML = html;
 }
 
-loadTable(data);
+let searchTimer = null;
 
-search.addEventListener("keyup",()=>{
+search.addEventListener("input", function () {
+    clearTimeout(searchTimer);
 
-    const keyword = search.value.toLowerCase();
+    searchTimer = setTimeout(function () {
+        const keyword = search.value.trim().toLowerCase();
 
-    const result = data.filter(item=>{
+        const result = data.filter(item => {
+            const score = Number(item.score) || 0;
 
-        return item.score <= 40 &&
-        item.name.toLowerCase().includes(keyword);
+            if (score > 40) {
+                return false;
+            }
 
-    });
+            const name = String(item.name || "").toLowerCase();
+            const studentId = String(item.studentId || "").toLowerCase();
+            const className = String(item.className || "").toLowerCase();
+            const room = String(item.room || "").toLowerCase();
 
-    loadTable(result);
-
-});
-
-function deleteStudent(index){
-
-    if(confirm("ต้องการลบข้อมูลนักเรียนหรือไม่?")){
-
-        data.splice(index,1);
-
-        localStorage.setItem(
-            "assessments",
-            JSON.stringify(data)
-        );
-
-        const keyword = search.value.toLowerCase();
-
-        const result = data.filter(item =>
-            item.score <= 40 &&
-            item.name.toLowerCase().includes(keyword)
-        );
+            return (
+                name.includes(keyword) ||
+                studentId.includes(keyword) ||
+                className.includes(keyword) ||
+                room.includes(keyword)
+            );
+        });
 
         loadTable(result);
+    }, 250);
+});
 
+async function deleteStudent(encodedStudentId, encodedDate, button) {
+    if (user.role !== "admin") {
+        alert("เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถลบข้อมูลได้");
+        return;
     }
 
-}
-if(user.role==="admin"){
-    document.getElementById("userRole").innerHTML="ผู้ดูแลระบบ";
-}else{
-    document.getElementById("userRole").innerHTML="ครู";
+    const studentId = decodeURIComponent(encodedStudentId);
+    const date = decodeURIComponent(encodedDate);
+
+    const item = data.find(student => {
+        return (
+            String(student.studentId || "") === studentId &&
+            String(student.date || "") === date
+        );
+    });
+
+    if (!item) {
+        alert("ไม่พบข้อมูลที่ต้องการลบ");
+        return;
+    }
+
+    const confirmDelete = confirm(
+        "ต้องการลบข้อมูลนี้หรือไม่?\\n\\n" +
+        "ชื่อ: " + (item.name || "-") +
+        "\\nรหัสนักเรียน: " + (item.studentId || "-") +
+        "\\nคะแนน: " + (item.score || 0) +
+        "\\n\\nเมื่อลบแล้วไม่สามารถย้อนกลับได้"
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "⏳ กำลังลบ...";
+    }
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify({
+                action: "delete",
+                studentId: String(item.studentId || ""),
+                date: item.date || ""
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("HTTP error: " + response.status);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(
+                result.message ||
+                "ลบข้อมูลไม่สำเร็จ"
+            );
+        }
+
+        alert("✅ ลบข้อมูลเรียบร้อย");
+        await loadRiskStudents();
+
+    } catch (error) {
+        console.error("ลบข้อมูลไม่สำเร็จ:", error);
+
+        alert(
+            "❌ ลบข้อมูลไม่สำเร็จ\\n\\n" +
+            error.message
+        );
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "ลบ";
+        }
+    }
 }
 
-if(user.role!=="admin"){
-    document.getElementById("settingMenu").style.display="none";
+if (user.role === "admin") {
+    document.getElementById("userRole").textContent = "ผู้ดูแลระบบ";
+} else {
+    document.getElementById("userRole").textContent = "ครู";
 }
 
-function logout(){
+if (user.role !== "admin") {
+    document.getElementById("settingMenu").style.display = "none";
+}
+
+function logout() {
     localStorage.removeItem("loginUser");
-    location.href="../index.html";
+    location.href = "index.html";
 }
+
+loadRiskStudents();
 </script>
 
 </body>
