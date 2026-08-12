@@ -314,11 +314,12 @@ AI CARE 360 © 2026
 <script>
 const user = JSON.parse(localStorage.getItem("loginUser"));
 
-if(!user){
+if (!user) {
     alert("กรุณาเข้าสู่ระบบ");
-    location.href="login.html";
+    location.href = "login.html";
 }
-const API_URL = "https://script.google.com/macros/s/AKfycbxveJxC0PirDbvAXrHE3ILJHn6oyhITAduOAiBiGCIZ4xhY7YoL0fpktG6ojyRjI1fkSw/exec";
+
+const API_URL = "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
 
 async function loadDashboard() {
     try {
@@ -330,15 +331,13 @@ async function loadDashboard() {
 
         const result = await response.json();
 
-        // รองรับทั้งกรณี API ส่ง Array โดยตรง
-        // และกรณีส่ง {data:[...]}
-        let data = Array.isArray(result)
+        const data = Array.isArray(result)
             ? result
             : (Array.isArray(result.data) ? result.data : []);
 
         console.log("ข้อมูลจาก Google Sheet:", data);
 
-        let total = data.length;
+        const total = data.length;
 
         let normal = 0;
         let watch = 0;
@@ -346,7 +345,6 @@ async function loadDashboard() {
         let high = 0;
 
         data.forEach(item => {
-
             const score = Number(item.score) || 0;
 
             if (score >= 61) {
@@ -358,7 +356,6 @@ async function loadDashboard() {
             } else {
                 high++;
             }
-
         });
 
         document.getElementById("totalStudent").innerHTML = total;
@@ -377,34 +374,31 @@ async function loadDashboard() {
         document.getElementById("highBar").style.width = highPercent + "%";
 
     } catch (error) {
-
         console.error("โหลดข้อมูล Dashboard ไม่สำเร็จ:", error);
 
         document.getElementById("totalStudent").innerHTML = "!";
         document.getElementById("normalCount").innerHTML = "!";
         document.getElementById("watchCount").innerHTML = "!";
         document.getElementById("riskCount").innerHTML = "!";
-
     }
 }
 
 loadDashboard();
-if(user.role==="admin"){
-    document.getElementById("userRole").innerHTML="ผู้ดูแลระบบ";
-}else{
-    document.getElementById("userRole").innerHTML="ครู";
-}
-if(user.role!=="admin"){
-    document.getElementById("settingMenu").style.display="none";
-}
-function logout(){
 
+if (user.role === "admin") {
+    document.getElementById("userRole").innerHTML = "ผู้ดูแลระบบ";
+} else {
+    document.getElementById("userRole").innerHTML = "ครู";
+}
+
+if (user.role !== "admin") {
+    document.getElementById("settingMenu").style.display = "none";
+}
+
+function logout() {
     localStorage.removeItem("loginUser");
-
-    location.href="index.html";
-
+    location.href = "index.html";
 }
-
 </script>
 
 </body>
