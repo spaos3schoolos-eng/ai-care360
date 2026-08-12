@@ -365,10 +365,19 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdkl
 
 async function loadDashboard(retry = 0) {
     try {
-        const response = await fetch(API_URL, {
-            cache: "no-store"
-        });
+        const controller = new AbortController();
 
+const timeout = setTimeout(() => {
+    controller.abort();
+}, 10000);
+
+const response = await fetch(API_URL, {
+    cache: "no-store",
+    signal: controller.signal
+});
+
+clearTimeout(timeout);
+            
         if (!response.ok) {
             throw new Error("HTTP error: " + response.status);
         }
