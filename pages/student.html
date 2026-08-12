@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AI CARE 360 - ข้อมูลนักเรียน</title>
 
 <style>
+
 *{
     margin:0;
     padding:0;
@@ -135,20 +137,21 @@ button{
     padding:8px 14px;
     border-radius:8px;
     cursor:pointer;
-}
-
-.deleteBtn{
-    background:#e53935;
-    color:white;
+    font-size:14px;
 }
 
 .editBtn{
     background:#43a047;
     color:white;
-    margin-right:5px;
 }
-    /* ==============================
-   Student Detail Popup
+
+.editBtn:hover{
+    background:#388e3c;
+}
+
+
+/* ==============================
+   Popup
 ============================== */
 
 .modal{
@@ -179,6 +182,7 @@ button{
         opacity:0;
         transform:scale(.9);
     }
+
     to{
         opacity:1;
         transform:scale(1);
@@ -257,521 +261,1239 @@ button{
 }
 
 .modal-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
     padding:15px 25px 25px;
-    text-align:right;
 }
 
 .closeBtn{
     background:#1e88e5;
     color:white;
     padding:10px 25px;
-    font-size:15px;
 }
-</style>
 
+.closeBtn:hover{
+    background:#1565c0;
+}
+
+.deleteBtn{
+    background:#e53935;
+    color:white;
+    padding:10px 20px;
+}
+
+.deleteBtn:hover{
+    background:#c62828;
+}
+
+.deleteBtn:disabled{
+    background:#aaa;
+    cursor:not-allowed;
+}
+
+
+/* ==============================
+   Mobile
+============================== */
+
+@media(max-width:800px){
+
+    header{
+        padding:0 15px;
+        font-size:20px;
+    }
+
+    .sidebar{
+        width:180px;
+    }
+
+    .main{
+        padding:15px;
+        overflow-x:auto;
+    }
+
+    .title{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:15px;
+    }
+
+    .search{
+        width:100%;
+    }
+
+    table{
+        min-width:650px;
+    }
+}
+
+</style>
 </head>
+
 
 <body>
 
 <header>
-<div>🤖 AI CARE 360</div>
-<div id="userRole"></div>
+
+    <div>🤖 AI CARE 360</div>
+
+    <div id="userRole"></div>
+
 </header>
+
 
 <div class="container">
 
+
 <div class="sidebar">
 
-<h3>เมนู</h3>
+    <h3>เมนู</h3>
 
-<a href="dashboard.html">🏠 หน้าหลัก</a>
-<a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
-<a href="assessment.html">📝 แบบประเมิน</a>
-<a href="statistics.html">📊 สถิติ</a>
-<a href="risk.html">🚨 กลุ่มเสี่ยง</a>
-<a href="report.html">📄 รายงาน</a>
-<a href="setting.html" id="settingMenu">⚙️ ตั้งค่า</a>
+    <a href="dashboard.html">🏠 หน้าหลัก</a>
 
-<a href="#" onclick="logout()">🚪 ออกจากระบบ</a>
+    <a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
+
+    <a href="assessment.html">📝 แบบประเมิน</a>
+
+    <a href="statistics.html">📊 สถิติ</a>
+
+    <a href="risk.html">🚨 กลุ่มเสี่ยง</a>
+
+    <a href="report.html">📄 รายงาน</a>
+
+    <a href="setting.html" id="settingMenu">
+        ⚙️ ตั้งค่า
+    </a>
+
+    <a href="#" onclick="logout()">
+        🚪 ออกจากระบบ
+    </a>
 
 </div>
+
 
 <div class="main">
 
-<div class="title">
+    <div class="title">
 
-<h2>ข้อมูลนักเรียน</h2>
+        <h2>ข้อมูลนักเรียน</h2>
 
-<input
-type="text"
-id="search"
-class="search"
-placeholder="ค้นหาชื่อนักเรียน..."
->
+        <input
+            type="text"
+            id="search"
+            class="search"
+            placeholder="ค้นหาชื่อ / รหัส / ชั้นเรียน..."
+        >
+
+    </div>
+
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ลำดับ</th>
+
+                <th>ชื่อนักเรียน</th>
+
+                <th>คะแนน</th>
+
+                <th>ระดับ</th>
+
+                <th>จัดการ</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody id="studentTable">
+
+            <tr>
+
+                <td colspan="5"
+                    style="padding:40px;color:#1e88e5;">
+
+                    ⏳ กำลังโหลดข้อมูลนักเรียน...
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
 
 </div>
 
-<table>
-
-<thead>
-
-<tr>
-
-<th>ลำดับ</th>
-
-<th>ชื่อนักเรียน</th>
-
-<th>คะแนน</th>
-
-<th>ระดับ</th>
-
-<th>จัดการ</th>
-
-</tr>
-
-</thead>
-
-<tbody id="studentTable">
-
-</tbody>
-
-</table>
-
 </div>
 
-</div>
-<!-- ==============================
-     Student Detail Modal
-============================== -->
+
+<!-- ======================================
+     Popup รายละเอียดนักเรียน
+======================================= -->
 
 <div id="studentModal" class="modal">
 
     <div class="modal-content">
 
+
         <div class="modal-header">
+
             <h2>👨‍🎓 ข้อมูลนักเรียน</h2>
-            <span class="close-modal" onclick="closeStudentModal()">&times;</span>
+
+            <span
+                class="close-modal"
+                onclick="closeStudentModal()">
+                &times;
+            </span>
+
         </div>
+
 
         <div class="modal-body">
 
-            <div class="student-info">
-                <div class="student-label">รหัสนักเรียน</div>
-                <div class="student-value" id="modalStudentId">-</div>
-            </div>
 
             <div class="student-info">
-                <div class="student-label">ชื่อ-นามสกุล</div>
-                <div class="student-value" id="modalName">-</div>
-            </div>
 
-            <div class="student-info">
-                <div class="student-label">ชั้นเรียน</div>
-                <div class="student-value" id="modalClass">-</div>
-            </div>
-
-            <div class="student-info">
-                <div class="student-label">ห้อง</div>
-                <div class="student-value" id="modalRoom">-</div>
-            </div>
-
-            <div class="student-info">
-                <div class="student-label">คะแนน</div>
-                <div class="student-value" id="modalScore">-</div>
-            </div>
-
-            <div class="student-info">
-                <div class="student-label">ระดับ</div>
-                <div class="student-value">
-                    <span id="modalLevel" class="level-badge">-</span>
+                <div class="student-label">
+                    รหัสนักเรียน
                 </div>
+
+                <div
+                    class="student-value"
+                    id="modalStudentId">
+                    -
+                </div>
+
             </div>
 
+
             <div class="student-info">
-                <div class="student-label">วันที่ประเมิน</div>
-                <div class="student-value" id="modalDate">-</div>
+
+                <div class="student-label">
+                    ชื่อ-นามสกุล
+                </div>
+
+                <div
+                    class="student-value"
+                    id="modalName">
+                    -
+                </div>
+
             </div>
+
+
+            <div class="student-info">
+
+                <div class="student-label">
+                    ชั้นเรียน
+                </div>
+
+                <div
+                    class="student-value"
+                    id="modalClass">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="student-info">
+
+                <div class="student-label">
+                    ห้อง
+                </div>
+
+                <div
+                    class="student-value"
+                    id="modalRoom">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="student-info">
+
+                <div class="student-label">
+                    คะแนน
+                </div>
+
+                <div
+                    class="student-value"
+                    id="modalScore">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="student-info">
+
+                <div class="student-label">
+                    ระดับ
+                </div>
+
+                <div class="student-value">
+
+                    <span
+                        id="modalLevel"
+                        class="level-badge">
+                        -
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="student-info">
+
+                <div class="student-label">
+                    วันที่ประเมิน
+                </div>
+
+                <div
+                    class="student-value"
+                    id="modalDate">
+                    -
+                </div>
+
+            </div>
+
 
         </div>
+
 
         <div class="modal-footer">
-            <button class="closeBtn" onclick="closeStudentModal()">
-                ปิด
+
+
+            <button
+                id="deleteStudentBtn"
+                class="deleteBtn"
+                onclick="deleteCurrentStudent()">
+
+                🗑️ ลบข้อมูล
+
             </button>
+
+
+            <button
+                class="closeBtn"
+                onclick="closeStudentModal()">
+
+                ปิด
+
+            </button>
+
+
         </div>
+
 
     </div>
 
 </div>
+
+
+
 <script>
-const user = JSON.parse(localStorage.getItem("loginUser"));
+
+/* =========================================
+   Login
+========================================= */
+
+const user =
+    JSON.parse(localStorage.getItem("loginUser"));
+
 
 if (!user) {
+
     alert("กรุณาเข้าสู่ระบบ");
+
     location.href = "login.html";
+
 }
 
-// ==========================================
-// Google Apps Script API
-// ==========================================
-const API_URL = "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
+
+/* =========================================
+   API
+========================================= */
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
+
 
 let data = [];
 
-const table = document.getElementById("studentTable");
-const search = document.getElementById("search");
+let currentStudent = null;
 
 
-// ==========================================
-// แปลงคะแนนเป็นระดับ
-// ==========================================
-function getLevel(score) {
+const table =
+    document.getElementById("studentTable");
+
+const search =
+    document.getElementById("search");
+
+
+
+/* =========================================
+   ระดับความเสี่ยง
+========================================= */
+
+function getLevel(score){
 
     score = Number(score) || 0;
 
-    if (score >= 61) {
+
+    if(score >= 61){
+
         return {
-            text: "ปกติ",
-            className: "normal"
+            text:"ปกติ",
+            className:"normal"
         };
 
-    } else if (score >= 41) {
-        return {
-            text: "เฝ้าระวัง",
-            className: "watch"
-        };
-
-    } else if (score >= 21) {
-        return {
-            text: "กลุ่มเสี่ยง",
-            className: "medium"
-        };
-
-    } else {
-        return {
-            text: "วิกฤต",
-            className: "high"
-        };
     }
+
+
+    if(score >= 41){
+
+        return {
+            text:"เฝ้าระวัง",
+            className:"watch"
+        };
+
+    }
+
+
+    if(score >= 21){
+
+        return {
+            text:"กลุ่มเสี่ยง",
+            className:"medium"
+        };
+
+    }
+
+
+    return {
+        text:"วิกฤต",
+        className:"high"
+    };
+
 }
 
 
-// ==========================================
-// แสดงข้อความกำลังโหลด
-// ==========================================
-function showLoading() {
+
+/* =========================================
+   Loading
+========================================= */
+
+function showLoading(){
 
     table.innerHTML = `
+
         <tr>
-            <td colspan="5" style="padding:40px; color:#1e88e5;">
+
+            <td
+                colspan="5"
+                style="
+                    padding:40px;
+                    color:#1e88e5;
+                "
+            >
+
                 ⏳ กำลังโหลดข้อมูลนักเรียน...
+
             </td>
+
         </tr>
+
     `;
+
 }
 
 
-// ==========================================
-// โหลดข้อมูลจาก Google Sheet
-// ==========================================
-async function loadStudents(retry = 0) {
+
+/* =========================================
+   โหลดข้อมูลจาก Google Sheet
+========================================= */
+
+async function loadStudents(retry = 0){
 
     showLoading();
 
-    const controller = new AbortController();
+
+    const controller =
+        new AbortController();
+
 
     const timeout = setTimeout(() => {
+
         controller.abort();
-    }, 15000);
 
-    try {
+    },15000);
 
-        const response = await fetch(API_URL, {
-            cache: "no-store",
-            signal: controller.signal
+
+    try{
+
+
+        const response = await fetch(API_URL,{
+
+            cache:"no-store",
+
+            signal:controller.signal
+
         });
+
 
         clearTimeout(timeout);
 
-        if (!response.ok) {
-            throw new Error("HTTP error: " + response.status);
+
+        if(!response.ok){
+
+            throw new Error(
+                "HTTP error: " + response.status
+            );
+
         }
 
-        const result = await response.json();
 
-        if (Array.isArray(result)) {
+        const result =
+            await response.json();
+
+
+        if(Array.isArray(result)){
+
             data = result;
 
-        } else if (Array.isArray(result.data)) {
-            data = result.data;
-
-        } else {
-            throw new Error(
-                result.message || "รูปแบบข้อมูลจาก API ไม่ถูกต้อง"
-            );
         }
 
-        console.log("ข้อมูลนักเรียน:", data);
+        else if(
+            result &&
+            Array.isArray(result.data)
+        ){
+
+            data = result.data;
+
+        }
+
+        else{
+
+            throw new Error(
+                result?.message ||
+                "รูปแบบข้อมูลจาก API ไม่ถูกต้อง"
+            );
+
+        }
+
+
+        console.log(
+            "ข้อมูลนักเรียน:",
+            data
+        );
+
 
         loadTable(data);
 
-    } catch (error) {
+
+    }
+
+    catch(error){
+
 
         clearTimeout(timeout);
 
-        console.error("โหลดข้อมูลนักเรียนไม่สำเร็จ:", error);
 
-        // ลองใหม่อัตโนมัติสูงสุด 3 ครั้ง
-        if (retry < 2) {
+        console.error(
+            "โหลดข้อมูลไม่สำเร็จ:",
+            error
+        );
+
+
+        if(retry < 2){
+
 
             table.innerHTML = `
+
                 <tr>
-                    <td colspan="5" style="padding:40px; color:#f9a825;">
-                        กำลังเชื่อมต่อใหม่...
+
+                    <td
+                        colspan="5"
+                        style="
+                            padding:40px;
+                            color:#f9a825;
+                        "
+                    >
+
+                        ⏳ กำลังเชื่อมต่อใหม่...
+
                     </td>
+
                 </tr>
+
             `;
 
+
             setTimeout(() => {
+
                 loadStudents(retry + 1);
-            }, 2000);
+
+            },2000);
+
 
             return;
+
         }
 
+
         table.innerHTML = `
+
             <tr>
-                <td colspan="5" style="padding:40px; color:#d32f2f;">
+
+                <td
+                    colspan="5"
+                    style="
+                        padding:40px;
+                        color:#d32f2f;
+                    "
+                >
+
                     ❌ โหลดข้อมูลไม่สำเร็จ
+
                     <br><br>
 
-                    <button onclick="loadStudents()"
-                    style="
-                        background:#1e88e5;
-                        color:white;
-                        padding:10px 20px;
-                    ">
+                    <button
+                        onclick="loadStudents()"
+                        style="
+                            background:#1e88e5;
+                            color:white;
+                            padding:10px 20px;
+                        "
+                    >
+
                         ลองใหม่
+
                     </button>
+
                 </td>
+
             </tr>
+
         `;
+
     }
+
 }
 
 
-// ==========================================
-// แสดงตาราง
-// ==========================================
-function loadTable(list) {
+
+/* =========================================
+   สร้างตาราง
+========================================= */
+
+function loadTable(list){
+
 
     table.innerHTML = "";
 
-    if (list.length === 0) {
+
+    if(list.length === 0){
+
 
         table.innerHTML = `
+
             <tr>
-                <td colspan="5" style="padding:40px;">
+
+                <td
+                    colspan="5"
+                    style="padding:40px;"
+                >
+
                     ไม่พบข้อมูลนักเรียน
+
                 </td>
+
             </tr>
+
         `;
 
+
         return;
+
     }
 
-    list.forEach((item, index) => {
 
-        const score = Number(item.score) || 0;
+    list.forEach((item,index) => {
 
-        const level = getLevel(score);
 
-        const row = document.createElement("tr");
+        const score =
+            Number(item.score) || 0;
 
-        const numberCell = document.createElement("td");
-        numberCell.textContent = index + 1;
 
-        const nameCell = document.createElement("td");
-        nameCell.textContent = item.name || "-";
+        const level =
+            getLevel(score);
 
-        const scoreCell = document.createElement("td");
-        scoreCell.textContent = score;
 
-        const levelCell = document.createElement("td");
-        levelCell.textContent = level.text;
-        levelCell.className = level.className;
+        const row =
+            document.createElement("tr");
 
-        const actionCell = document.createElement("td");
 
-        const button = document.createElement("button");
-        button.textContent = "ดูข้อมูล";
-        button.className = "editBtn";
+        const numberCell =
+            document.createElement("td");
 
-        button.onclick = function() {
+        numberCell.textContent =
+            index + 1;
+
+
+
+        const nameCell =
+            document.createElement("td");
+
+        nameCell.textContent =
+            item.name || "-";
+
+
+
+        const scoreCell =
+            document.createElement("td");
+
+        scoreCell.textContent =
+            score;
+
+
+
+        const levelCell =
+            document.createElement("td");
+
+        levelCell.textContent =
+            level.text;
+
+        levelCell.className =
+            level.className;
+
+
+
+        const actionCell =
+            document.createElement("td");
+
+
+        const viewButton =
+            document.createElement("button");
+
+
+        viewButton.textContent =
+            "ดูข้อมูล";
+
+
+        viewButton.className =
+            "editBtn";
+
+
+        viewButton.onclick = function(){
+
             viewStudent(item);
+
         };
 
-        actionCell.appendChild(button);
 
-        row.appendChild(numberCell);
-        row.appendChild(nameCell);
-        row.appendChild(scoreCell);
-        row.appendChild(levelCell);
-        row.appendChild(actionCell);
+        actionCell.appendChild(
+            viewButton
+        );
+
+
+        row.appendChild(
+            numberCell
+        );
+
+        row.appendChild(
+            nameCell
+        );
+
+        row.appendChild(
+            scoreCell
+        );
+
+        row.appendChild(
+            levelCell
+        );
+
+        row.appendChild(
+            actionCell
+        );
+
 
         table.appendChild(row);
+
     });
+
 }
 
 
-// ==========================================
-// ค้นหานักเรียน
-// ==========================================
-search.addEventListener("input", () => {
 
-    const keyword = search.value
+/* =========================================
+   ค้นหา
+========================================= */
+
+search.addEventListener(
+"input",
+function(){
+
+
+    const keyword =
+        search.value
         .trim()
         .toLowerCase();
 
-    const result = data.filter(item => {
 
-        const name = String(item.name || "")
-            .toLowerCase();
+    const result =
+        data.filter(item => {
 
-        const studentId = String(item.studentId || "")
-            .toLowerCase();
 
-        const className = String(item.className || "")
-            .toLowerCase();
+            const name =
+                String(item.name || "")
+                .toLowerCase();
 
-        return (
-            name.includes(keyword) ||
-            studentId.includes(keyword) ||
-            className.includes(keyword)
-        );
-    });
+
+            const studentId =
+                String(item.studentId || "")
+                .toLowerCase();
+
+
+            const className =
+                String(item.className || "")
+                .toLowerCase();
+
+
+            const room =
+                String(item.room || "")
+                .toLowerCase();
+
+
+            return (
+
+                name.includes(keyword) ||
+
+                studentId.includes(keyword) ||
+
+                className.includes(keyword) ||
+
+                room.includes(keyword)
+
+            );
+
+        });
+
 
     loadTable(result);
+
 });
 
 
-// ==========================================
-// ดูข้อมูลนักเรียน
-// ==========================================
-function viewStudent(item) {
 
-    const level = getLevel(item.score);
+/* =========================================
+   ดูข้อมูลนักเรียน
+========================================= */
 
-    document.getElementById("modalStudentId").textContent =
+function viewStudent(item){
+
+
+    currentStudent = item;
+
+
+    const level =
+        getLevel(item.score);
+
+
+    document.getElementById(
+        "modalStudentId"
+    ).textContent =
         item.studentId || "-";
 
-    document.getElementById("modalName").textContent =
+
+    document.getElementById(
+        "modalName"
+    ).textContent =
         item.name || "-";
 
-    document.getElementById("modalClass").textContent =
+
+    document.getElementById(
+        "modalClass"
+    ).textContent =
         item.className || "-";
 
-    document.getElementById("modalRoom").textContent =
+
+    document.getElementById(
+        "modalRoom"
+    ).textContent =
         item.room || "-";
 
-    document.getElementById("modalScore").textContent =
+
+    document.getElementById(
+        "modalScore"
+    ).textContent =
         Number(item.score) || 0;
 
 
-    // ระดับ
-    const levelElement = document.getElementById("modalLevel");
 
-    levelElement.textContent = level.text;
+    const levelElement =
+        document.getElementById(
+            "modalLevel"
+        );
+
+
+    levelElement.textContent =
+        level.text;
+
 
     levelElement.className =
-        "level-badge " + level.className;
+        "level-badge " +
+        level.className;
 
 
-    // วันที่ประเมิน
+
     let dateText = "-";
 
-    if (item.date) {
 
-        const date = new Date(item.date);
+    if(item.date){
 
-        if (!isNaN(date.getTime())) {
 
-            dateText = date.toLocaleString("th-TH", {
-                day:"2-digit",
-                month:"2-digit",
-                year:"numeric",
-                hour:"2-digit",
-                minute:"2-digit"
-            });
+        const date =
+            new Date(item.date);
+
+
+        if(!isNaN(date.getTime())){
+
+
+            dateText =
+                date.toLocaleString(
+                    "th-TH",
+                    {
+                        day:"2-digit",
+                        month:"2-digit",
+                        year:"numeric",
+                        hour:"2-digit",
+                        minute:"2-digit"
+                    }
+                );
+
         }
+
     }
 
-    document.getElementById("modalDate").textContent =
+
+    document.getElementById(
+        "modalDate"
+    ).textContent =
         dateText;
 
 
-    // เปิด Popup
-    document.getElementById("studentModal").style.display =
+
+    // เฉพาะ Admin เห็นปุ่มลบ
+
+    const deleteBtn =
+        document.getElementById(
+            "deleteStudentBtn"
+        );
+
+
+    if(user.role === "admin"){
+
+        deleteBtn.style.display =
+            "inline-block";
+
+    }
+
+    else{
+
+        deleteBtn.style.display =
+            "none";
+
+    }
+
+
+
+    document.getElementById(
+        "studentModal"
+    ).style.display =
         "flex";
+
 }
 
 
-function closeStudentModal() {
 
-    document.getElementById("studentModal").style.display =
+/* =========================================
+   ปิด Popup
+========================================= */
+
+function closeStudentModal(){
+
+    document.getElementById(
+        "studentModal"
+    ).style.display =
         "none";
+
 }
 
 
-// คลิกพื้นที่ด้านนอกเพื่อปิด Popup
-document.getElementById("studentModal")
-.addEventListener("click", function(event) {
 
-    if (event.target === this) {
+/* =========================================
+   ลบข้อมูลจาก Google Sheet
+========================================= */
+
+async function deleteCurrentStudent(){
+
+
+    if(!currentStudent){
+
+        alert(
+            "ไม่พบข้อมูลที่ต้องการลบ"
+        );
+
+        return;
+
+    }
+
+
+    if(user.role !== "admin"){
+
+        alert(
+            "เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถลบข้อมูลได้"
+        );
+
+        return;
+
+    }
+
+
+    const confirmDelete =
+        confirm(
+
+            "ต้องการลบข้อมูลนี้หรือไม่?\n\n" +
+
+            "ชื่อ: " +
+            (currentStudent.name || "-") +
+
+            "\nรหัสนักเรียน: " +
+            (currentStudent.studentId || "-") +
+
+            "\nคะแนน: " +
+            (currentStudent.score || 0) +
+
+            "\n\nเมื่อลบแล้วไม่สามารถย้อนกลับได้"
+
+        );
+
+
+    if(!confirmDelete){
+
+        return;
+
+    }
+
+
+    const button =
+        document.getElementById(
+            "deleteStudentBtn"
+        );
+
+
+    button.disabled = true;
+
+    button.textContent =
+        "⏳ กำลังลบ...";
+
+
+    try{
+
+
+        const response =
+            await fetch(API_URL,{
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                    "text/plain;charset=utf-8"
+                },
+
+                body:JSON.stringify({
+
+                    action:"delete",
+
+                    studentId:
+                        String(
+                            currentStudent.studentId || ""
+                        ),
+
+                    date:
+                        currentStudent.date || ""
+
+                })
+
+            });
+
+
+        if(!response.ok){
+
+            throw new Error(
+                "HTTP error: " +
+                response.status
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if(!result.success){
+
+            throw new Error(
+                result.message ||
+                "ลบข้อมูลไม่สำเร็จ"
+            );
+
+        }
+
+
+        alert(
+            "✅ ลบข้อมูลเรียบร้อย"
+        );
+
+
         closeStudentModal();
+
+
+        currentStudent = null;
+
+
+        // โหลดข้อมูลใหม่จากฐานข้อมูล
+
+        await loadStudents();
+
+
+    }
+
+    catch(error){
+
+
+        console.error(
+            "ลบข้อมูลไม่สำเร็จ:",
+            error
+        );
+
+
+        alert(
+
+            "❌ ลบข้อมูลไม่สำเร็จ\n\n" +
+
+            error.message
+
+        );
+
+    }
+
+    finally{
+
+
+        button.disabled = false;
+
+
+        button.textContent =
+            "🗑️ ลบข้อมูล";
+
+    }
+
+}
+
+
+
+/* =========================================
+   คลิกด้านนอก Popup เพื่อปิด
+========================================= */
+
+document
+.getElementById("studentModal")
+.addEventListener(
+"click",
+function(event){
+
+
+    if(event.target === this){
+
+        closeStudentModal();
+
     }
 
 });
 
 
-// ==========================================
-// สิทธิ์ผู้ใช้งาน
-// ==========================================
-if (user.role === "admin") {
 
-    document.getElementById("userRole").innerHTML =
+/* =========================================
+   Role
+========================================= */
+
+if(user.role === "admin"){
+
+    document.getElementById(
+        "userRole"
+    ).textContent =
         "ผู้ดูแลระบบ";
 
-} else {
+}
 
-    document.getElementById("userRole").innerHTML =
+else{
+
+    document.getElementById(
+        "userRole"
+    ).textContent =
         "ครู";
+
 }
 
-if (user.role !== "admin") {
 
-    document.getElementById("settingMenu").style.display =
+
+if(user.role !== "admin"){
+
+    document.getElementById(
+        "settingMenu"
+    ).style.display =
         "none";
+
 }
 
 
-// ==========================================
-// Logout
-// ==========================================
-function logout() {
 
-    localStorage.removeItem("loginUser");
+/* =========================================
+   Logout
+========================================= */
 
-    location.href = "index.html";
+function logout(){
+
+    localStorage.removeItem(
+        "loginUser"
+    );
+
+    location.href =
+        "index.html";
+
 }
 
 
-// ==========================================
-// เริ่มโหลดข้อมูล
-// ==========================================
+
+/* =========================================
+   เริ่มระบบ
+========================================= */
+
 loadStudents();
 
 </script>
-</body>
 
+
+</body>
 </html>
