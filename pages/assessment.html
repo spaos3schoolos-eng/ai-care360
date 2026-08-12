@@ -149,89 +149,152 @@ text-align:center;
 color:#666;
 font-size:14px;
 }
-/* ===== แก้หน้าจอมือถือ ===== */
-@media screen and (max-width: 600px) {
+/* ===== MOBILE / TABLET ===== */
+@media screen and (max-width: 768px) {
 
-    body {
-        padding: 10px !important;
+    html, body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
-
-    .container {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 auto !important;
-    }
-
-    /* ทำให้แถวข้อมูลนักเรียนไม่ดันออกข้างจอ */
-    .student-info {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-        width: 100% !important;
-    }
-
-    /* ช่องกรอกข้อมูลทั้งหมด */
-    input,
-    select {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        box-sizing: border-box !important;
-    }
-}
-/* ===== MOBILE FIX ===== */
-@media screen and (max-width: 600px) {
-
-    body {
-        padding: 10px !important;
-    }
-
-    .container {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    .student {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-        width: 100% !important;
-    }
-
-    .student input {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-}
-/* ===== รองรับมือถือ ===== */
-@media screen and (max-width: 600px) {
 
     body {
         padding: 10px;
     }
 
-    .student {
-        grid-template-columns: 1fr !important;
-        gap: 12px;
+    .container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        border-radius: 14px;
     }
 
-    .student input {
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
+    .header {
+        padding: 20px 12px;
+    }
+
+    .header h1 {
+        font-size: 26px;
+        line-height: 1.25;
+    }
+
+    .header p {
+        font-size: 15px;
+        line-height: 1.5;
     }
 
     .content {
-        padding: 15px;
+        padding: 15px 10px 20px;
+    }
+
+    .student {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+        margin-bottom: 24px;
+    }
+
+    .student input,
+    input,
+    select {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        font-size: 16px;
     }
 
     .section {
-        padding: 15px;
+        width: 100%;
+        margin-top: 20px;
+        padding: 14px 10px;
+        border-left-width: 4px;
+        border-radius: 12px;
+    }
+
+    .section h2 {
+        font-size: 20px;
+        line-height: 1.35;
+    }
+
+    .question {
+        margin-top: 16px;
+    }
+
+    .question label {
+        font-size: 16px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .question select {
+        padding: 12px 10px;
+    }
+
+    button {
         margin-top: 25px;
+        padding: 15px 10px;
+        font-size: 18px;
+        border-radius: 16px;
+    }
+
+    #result {
+        width: 100%;
+        padding: 18px 10px;
+        font-size: 18px;
+        overflow-wrap: anywhere;
+    }
+
+    #result h2 {
+        font-size: 20px;
+        line-height: 1.45;
+    }
+
+    footer {
+        font-size: 12px;
     }
 }
+
+@media screen and (max-width: 420px) {
+
+    body {
+        padding: 6px;
+    }
+
+    .header {
+        padding: 18px 8px;
+    }
+
+    .header h1 {
+        font-size: 23px;
+    }
+
+    .header p {
+        font-size: 14px;
+    }
+
+    .content {
+        padding: 12px 8px 18px;
+    }
+
+    .section {
+        padding: 12px 8px;
+    }
+
+    .section h2 {
+        font-size: 18px;
+    }
+
+    .question label {
+        font-size: 15px;
+    }
+
+    button {
+        font-size: 17px;
+    }
+}
+
 </style>
 
 </head>
@@ -533,157 +596,266 @@ AI CARE 360 © 2026
 </footer>
 
 <script>
+const API_URL =
+"https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
 
-function calculateScore(){
+const ASSESSMENT_CACHE_KEY = "assessments";
+const ASSESSMENT_CACHE_TIME_KEY = "assessments_cache_time";
 
-const selects = document.querySelectorAll(".score");
+let isSaving = false;
 
-for(let item of selects){
-    if(item.value===""){
-        alert("กรุณาเลือกคำตอบให้ครบทุกข้อ");
+function getRisk(score){
+    if(score >= 61){
+        return {
+            text:"🟢 สุขภาพจิตอยู่ในเกณฑ์ดี",
+            riskLevel:"ปกติ",
+            css:"good"
+        };
+    }else if(score >= 41){
+        return {
+            text:"🟡 สุขภาพจิตอยู่ในเกณฑ์เฝ้าระวัง",
+            riskLevel:"เฝ้าระวัง",
+            css:"watch"
+        };
+    }else if(score >= 21){
+        return {
+            text:"🟠 สุขภาพจิตอยู่ในกลุ่มเสี่ยง",
+            riskLevel:"กลุ่มเสี่ยง",
+            css:"risk"
+        };
+    }
+
+    return {
+        text:"🔴 สุขภาพจิตอยู่ในกลุ่มวิกฤต ควรได้รับการดูแล",
+        riskLevel:"วิกฤต",
+        css:"danger"
+    };
+}
+
+function readAssessmentCache(){
+    try{
+        const list = JSON.parse(
+            localStorage.getItem(ASSESSMENT_CACHE_KEY) || "[]"
+        );
+        return Array.isArray(list) ? list : [];
+    }catch(error){
+        return [];
+    }
+}
+
+function saveAssessmentCache(list){
+    localStorage.setItem(
+        ASSESSMENT_CACHE_KEY,
+        JSON.stringify(list)
+    );
+
+    localStorage.setItem(
+        ASSESSMENT_CACHE_TIME_KEY,
+        String(Date.now())
+    );
+}
+
+async function postAssessment(payload){
+
+    const controller = new AbortController();
+
+    const timeout = setTimeout(function(){
+        controller.abort();
+    },4500);
+
+    try{
+        const response = await fetch(API_URL,{
+            method:"POST",
+            body:JSON.stringify(payload),
+            signal:controller.signal
+        });
+
+        if(!response.ok){
+            throw new Error(
+                "HTTP error: " + response.status
+            );
+        }
+
+        const result = await response.json();
+
+        if(result && result.success === false){
+            throw new Error(
+                result.message ||
+                "บันทึกข้อมูลไม่สำเร็จ"
+            );
+        }
+
+        return result;
+
+    }finally{
+        clearTimeout(timeout);
+    }
+}
+
+async function calculateScore(){
+
+    if(isSaving){
         return;
     }
-}
 
-let score = 0;
+    const fullname =
+        document.getElementById("fullname").value.trim();
 
-const negativeQuestions = [2, 7, 18];
+    const classroom =
+        document.getElementById("classroom").value.trim();
 
-selects.forEach(function(item, index){
+    const number =
+        document.getElementById("number").value.trim();
 
-    let value = Number(item.value);
-
-    if(negativeQuestions.includes(index)){
-        value = 4 - value;
+    if(
+        fullname === "" ||
+        classroom === "" ||
+        number === ""
+    ){
+        alert("กรุณากรอกข้อมูลนักเรียนให้ครบ");
+        return;
     }
 
-    score += value;
-});
-let text="";
-let css="";
+    const selects =
+        document.querySelectorAll(".score");
 
-if(score>=61){
+    for(const item of selects){
+        if(item.value === ""){
+            alert("กรุณาเลือกคำตอบให้ครบทุกข้อ");
+            return;
+        }
+    }
 
-text="🟢 สุขภาพจิตอยู่ในเกณฑ์ดี";
+    let score = 0;
 
-css="good";
+    // index 2,7,18 = ข้อ 3,8,19
+    const negativeQuestions = [2,7,18];
+    const answers = [];
 
-}else if(score>=41){
+    selects.forEach(function(item,index){
 
-text="🟡 สุขภาพจิตอยู่ในเกณฑ์เฝ้าระวัง";
+        const rawValue = Number(item.value);
+        let calculatedValue = rawValue;
 
-css="watch";
+        if(negativeQuestions.includes(index)){
+            calculatedValue = 4 - rawValue;
+        }
 
-}else if(score>=21){
+        score += calculatedValue;
 
-text="🟠 สุขภาพจิตอยู่ในกลุ่มเสี่ยง";
-
-css="risk";
-
-}else{
-
-text="🔴 สุขภาพจิตอยู่ในกลุ่มวิกฤต ควรได้รับการดูแล";
-
-css="danger";
-
-}
-const result = document.getElementById("result");
-
-result.style.display = "block";
-result.className = css;
-
-result.innerHTML = `
-<h2>${text}</h2>
-<br>
-คะแนนรวม : <b>${score}</b> คะแนน
-`;
-const fullname = document.getElementById("fullname").value.trim();
-const classroom = document.getElementById("classroom").value.trim();
-const number = document.getElementById("number").value.trim();
-
-if(fullname === "" || classroom === "" || number === ""){
-    alert("กรุณากรอกข้อมูลนักเรียนให้ครบ");
-    return;
-}
-const student = {
-    name: fullname,
-    class: classroom,
-    number: number,
-    score: score,
-    level: text,
-    date: new Date().toLocaleDateString("th-TH")
-};
-
-let assessments =
-JSON.parse(localStorage.getItem("assessments")) || [];
-
-// ตรวจสอบว่ากรอกชื่อหรือไม่
-if(student.name.trim() === ""){
-    alert("กรุณากรอกชื่อนักเรียน");
-    return;
-}
-
-// ค้นหาว่ามีข้อมูลนักเรียนคนเดิมอยู่แล้วหรือไม่
-const index = assessments.findIndex(item =>
-    item.name === student.name &&
-    item.class === student.class &&
-    item.number === student.number
-);
-
-// ถ้ามีแล้วให้อัปเดตข้อมูล
-if(index !== -1){
-    assessments[index] = student;
-}else{
-    assessments.push(student);
-}
-// ===== ส่งข้อมูลไป Google Sheet =====
-const API_URL = "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
-
-fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-        studentId: student.number,
-        name: student.name,
-        className: student.class,
-        room: "",
-        score: student.score,
-        riskLevel: student.level,
-        answers: {}
-    })
-})
-.then(response => response.json())
-.then(data => {
-    console.log("บันทึก Google Sheet สำเร็จ", data);
-})
-.catch(error => {
-    console.error("บันทึก Google Sheet ไม่สำเร็จ", error);
-});
-
-// บันทึกลง LocalStorage
-
-localStorage.setItem(
-    "assessments",
-    JSON.stringify(assessments)
-);
-// รีเซ็ตผลลัพธ์
-setTimeout(() => {
-    result.scrollIntoView({
-        behavior: "smooth"
+        answers.push({
+            question:index + 1,
+            answer:rawValue,
+            score:calculatedValue
+        });
     });
-},100);
 
-// รีเซ็ตฟอร์ม
-// ล้างข้อมูลในฟอร์ม
-document.getElementById("fullname").value = "";
-document.getElementById("classroom").value = "";
-document.getElementById("number").value = "";
+    const risk = getRisk(score);
+    const result = document.getElementById("result");
 
-document.querySelectorAll(".score").forEach(item=>{
-    item.selectedIndex = 0;
-});
+    result.style.display = "block";
+    result.className = risk.css;
+    result.innerHTML = `
+        <h2>${risk.text}</h2>
+        <br>
+        คะแนนรวม : <b>${score}</b> คะแนน
+        <br><br>
+        <span style="font-size:16px;">
+            ⏳ กำลังบันทึกข้อมูล...
+        </span>
+    `;
 
-alert("บันทึกผลการประเมินเรียบร้อยแล้ว");
+    const student = {
+        date:new Date().toISOString(),
+        studentId:number,
+        name:fullname,
+        className:classroom,
+        room:"",
+        score:score,
+        riskLevel:risk.riskLevel,
+        answers:answers
+    };
 
+    const button =
+        document.querySelector(
+            'button[onclick="calculateScore()"]'
+        );
+
+    const oldButtonText = button.innerHTML;
+
+    isSaving = true;
+    button.disabled = true;
+    button.innerHTML = "⏳ กำลังบันทึก...";
+
+    try{
+
+        await postAssessment(student);
+
+        const assessments = readAssessmentCache();
+        assessments.push(student);
+        saveAssessmentCache(assessments);
+
+        result.innerHTML = `
+            <h2>${risk.text}</h2>
+            <br>
+            คะแนนรวม : <b>${score}</b> คะแนน
+            <br><br>
+            <span style="font-size:16px;">
+                ✅ บันทึกข้อมูลเรียบร้อยแล้ว
+            </span>
+        `;
+
+        document.getElementById("fullname").value = "";
+        document.getElementById("classroom").value = "";
+        document.getElementById("number").value = "";
+
+        selects.forEach(function(item){
+            item.selectedIndex = 0;
+        });
+
+        setTimeout(function(){
+            result.scrollIntoView({
+                behavior:"smooth",
+                block:"center"
+            });
+        },100);
+
+        alert("บันทึกผลการประเมินเรียบร้อยแล้ว");
+
+    }catch(error){
+
+        console.error(
+            "บันทึก Google Sheet ไม่สำเร็จ:",
+            error
+        );
+
+        result.innerHTML = `
+            <h2>${risk.text}</h2>
+            <br>
+            คะแนนรวม : <b>${score}</b> คะแนน
+            <br><br>
+            <span style="
+                font-size:16px;
+                color:#b71c1c;
+            ">
+                ❌ ยังบันทึกลงฐานข้อมูลไม่สำเร็จ
+                กรุณากดประเมินอีกครั้ง
+            </span>
+        `;
+
+        alert(
+            error.name === "AbortError"
+            ? "ฐานข้อมูลตอบช้าเกิน 4.5 วินาที กรุณาลองอีกครั้ง"
+            : "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง"
+        );
+
+    }finally{
+
+        isSaving = false;
+        button.disabled = false;
+        button.innerHTML = oldButtonText;
+
+    }
 }
 </script>
 
