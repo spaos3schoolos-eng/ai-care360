@@ -722,21 +722,57 @@ function showLoading(){
    โหลดข้อมูลจาก Google Sheet
 ========================================= */
 
-async function loadStudents(retry = 0){
+const STUDENT_CACHE_KEY = "assessments";
+const STUDENT_CACHE_TIME_KEY = "assessments_cache_time";
+const STUDENT_CACHE_MAX_AGE = 5 * 60 * 1000;
 
-    showLoading();
+function readStudentCache(){
+    try{
+        const raw = localStorage.getItem(STUDENT_CACHE_KEY);
+        if(!raw) return null;
 
-    try {
+        const cached = JSON.parse(raw);
+        return Array.isArray(cached) ? cached : null;
+    }catch(error){
+        console.warn("อ่าน cache นักเรียนไม่สำเร็จ:", error);
+        return null;
+    }
+}
 
-        const response = await fetch(
-            API_URL + "?t=" + Date.now(),
-            {
-                method: "GET",
-                cache: "no-store"
-            }
+function saveStudentCache(list){
+    try{
+        localStorage.setItem(
+            STUDENT_CACHE_KEY,
+            JSON.stringify(list)
         );
 
-        if (!response.ok) {
+        localStorage.setItem(
+            STUDENT_CACHE_TIME_KEY,
+            String(Date.now())
+        );
+    }catch(error){
+        console.warn("บันทึก cache นักเรียนไม่สำเร็จ:", error);
+    }
+}
+
+async function refreshStudents(showError = false){
+
+    const controller = new AbortController();
+
+    // ตัดการรอ API ที่ 4.5 วินาที
+    const timeout = setTimeout(function(){
+        controller.abort();
+    }, 4500);
+
+    try{
+
+        const response = await fetch(API_URL,{
+            method:"GET",
+            cache:"no-store",
+            signal:controller.signal
+        });
+
+        if(!response.ok){
             throw new Error(
                 "HTTP error: " + response.status
             );
@@ -744,80 +780,169 @@ async function loadStudents(retry = 0){
 
         const result = await response.json();
 
-        if (Array.isArray(result)) {
+        let freshData = null;
 
-            data = result;
-
-        } else if (
+        if(Array.isArray(result)){
+            freshData = result;
+        }
+        else if(
             result &&
             Array.isArray(result.data)
-        ) {
-
-            data = result.data;
-
-        } else {
-
+        ){
+            freshData = result.data;
+        }
+        else{
             throw new Error(
                 result?.message ||
                 "รูปแบบข้อมูลจาก API ไม่ถูกต้อง"
             );
         }
 
-        console.log("ข้อมูลนักเรียน:", data);
+        data = freshData;
 
-        loadTable(data);
+        saveStudentCache(data);
 
-    } catch (error) {
+        // ถ้ากำลังค้นหาอยู่ ให้คงผลค้นหาเดิม
+        applyCurrentSearch();
 
-        console.error(
-            "โหลดข้อมูลไม่สำเร็จ:",
+        return data;
+
+    }
+    catch(error){
+
+        console.warn(
+            "อัปเดตข้อมูลนักเรียนเบื้องหลังไม่สำเร็จ:",
             error
         );
 
-        // ลองเชื่อมต่อใหม่เพียง 1 ครั้ง
-        if (retry < 1) {
+        // ถ้ามี cache อยู่แล้ว ไม่ต้องทำให้หน้าจอหาย
+        if(showError && !readStudentCache()){
 
             table.innerHTML = `
                 <tr>
                     <td colspan="5"
-                        style="padding:40px;color:#f9a825;">
-                        ⏳ กำลังเชื่อมต่อใหม่...
+                        style="padding:40px;color:#d32f2f;">
+
+                        ❌ โหลดข้อมูลไม่สำเร็จ
+
+                        <br><br>
+
+                        <button
+                            onclick="loadStudents(true)"
+                            style="
+                                background:#1e88e5;
+                                color:white;
+                                padding:10px 20px;
+                                border:none;
+                                border-radius:6px;
+                                cursor:pointer;
+                            ">
+                            ลองใหม่
+                        </button>
+
                     </td>
                 </tr>
             `;
-
-            setTimeout(function () {
-                loadStudents(retry + 1);
-            }, 500);
-
-            return;
         }
 
-        table.innerHTML = `
-            <tr>
-                <td colspan="5"
-                    style="padding:40px;color:#d32f2f;">
+        return null;
 
-                    ❌ โหลดข้อมูลไม่สำเร็จ
+    }
+    finally{
 
-                    <br><br>
+        clearTimeout(timeout);
 
-                    <button
-                        onclick="loadStudents()"
-                        style="
-                            background:#1e88e5;
-                            color:white;
-                            padding:10px 20px;
-                            border:none;
-                            border-radius:6px;
-                            cursor:pointer;
-                        ">
-                        ลองใหม่
-                    </button>
+    }
+}
 
-                </td>
-            </tr>
-        `;
+function applyCurrentSearch(){
+
+    const keyword =
+        search.value
+        .trim()
+        .toLowerCase();
+
+    if(!keyword){
+        loadTable(data);
+        return;
+    }
+
+    const result = data.filter(item => {
+
+        const name =
+            String(item.name || "")
+            .toLowerCase();
+
+        const studentId =
+            String(item.studentId || "")
+            .toLowerCase();
+
+        const className =
+            String(item.className || "")
+            .toLowerCase();
+
+        const room =
+            String(item.room || "")
+            .toLowerCase();
+
+        return (
+            name.includes(keyword) ||
+            studentId.includes(keyword) ||
+            className.includes(keyword) ||
+            room.includes(keyword)
+        );
+
+    });
+
+    loadTable(result);
+}
+
+async function loadStudents(forceRefresh = false){
+
+    // 1. แสดงข้อมูล cache ทันที
+    const cached = readStudentCache();
+
+    if(cached){
+
+        data = cached;
+
+        applyCurrentSearch();
+
+    }
+    else{
+
+        showLoading();
+
+    }
+
+    // 2. ถ้า cache ยังใหม่ หน้าเว็บไม่ต้องรอ API
+    const cacheTime =
+        Number(
+            localStorage.getItem(
+                STUDENT_CACHE_TIME_KEY
+            )
+        ) || 0;
+
+    const cacheAge =
+        Date.now() - cacheTime;
+
+    // 3. sync Google Sheet เบื้องหลัง
+    if(
+        forceRefresh ||
+        !cached ||
+        cacheAge > STUDENT_CACHE_MAX_AGE
+    ){
+
+        refreshStudents(!cached);
+
+    }
+    else{
+
+        // มี cache ใหม่อยู่แล้ว ให้ sync ช้าลงเล็กน้อย
+        setTimeout(function(){
+            refreshStudents(false);
+        },100);
+
     }
 }
 
@@ -973,57 +1098,8 @@ viewStudent(item);
 search.addEventListener(
 "input",
 function(){
-
-
-    const keyword =
-        search.value
-        .trim()
-        .toLowerCase();
-
-
-    const result =
-        data.filter(item => {
-
-
-            const name =
-                String(item.name || "")
-                .toLowerCase();
-
-
-            const studentId =
-                String(item.studentId || "")
-                .toLowerCase();
-
-
-            const className =
-                String(item.className || "")
-                .toLowerCase();
-
-
-            const room =
-                String(item.room || "")
-                .toLowerCase();
-
-
-            return (
-
-                name.includes(keyword) ||
-
-                studentId.includes(keyword) ||
-
-                className.includes(keyword) ||
-
-                room.includes(keyword)
-
-            );
-
-        });
-
-
-    loadTable(result);
-
+    applyCurrentSearch();
 });
-
 
 
 /* =========================================
@@ -1304,9 +1380,19 @@ async function deleteCurrentStudent(){
         currentStudent = null;
 
 
-        // โหลดข้อมูลใหม่จากฐานข้อมูล
+        // ลบออกจากหน้าจอและ cache ทันที
+        data = data.filter(item => !(
+            String(item.studentId || "") ===
+                String(currentStudent?.studentId || "") &&
+            String(item.date || "") ===
+                String(currentStudent?.date || "")
+        ));
 
-        await loadStudents();
+        saveStudentCache(data);
+        applyCurrentSearch();
+
+        // ตรวจข้อมูลจาก Google Sheet เบื้องหลัง
+        refreshStudents(false);
 
 
     }
