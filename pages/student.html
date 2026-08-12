@@ -885,13 +885,17 @@ function showLoading(){
    โหลดข้อมูลจาก Google Sheet
 ========================================= */
 
-const STUDENT_CACHE_KEY = "assessments";
+const STUDENT_CACHE_KEY = "ai_care_360_student_cache";
+const LEGACY_CACHE_KEY = "assessments";
 const STUDENT_CACHE_TIME_KEY = "assessments_cache_time";
 const STUDENT_CACHE_MAX_AGE = 5 * 60 * 1000;
 
 function readStudentCache(){
     try{
-        const raw = localStorage.getItem(STUDENT_CACHE_KEY);
+        const raw =
+            localStorage.getItem(STUDENT_CACHE_KEY) ||
+            localStorage.getItem(LEGACY_CACHE_KEY);
+
         if(!raw) return null;
 
         const cached = JSON.parse(raw);
@@ -904,9 +908,17 @@ function readStudentCache(){
 
 function saveStudentCache(list){
     try{
+        const json = JSON.stringify(list);
+
         localStorage.setItem(
             STUDENT_CACHE_KEY,
-            JSON.stringify(list)
+            json
+        );
+
+        // เก็บ key เดิมไว้เพื่อให้หน้าอื่นที่ยังใช้ assessments อ่านข้อมูลได้ทันที
+        localStorage.setItem(
+            LEGACY_CACHE_KEY,
+            json
         );
 
         localStorage.setItem(
@@ -929,7 +941,12 @@ async function refreshStudents(showError = false){
 
     try{
 
-        const response = await fetch(API_URL,{
+        const url =
+            API_URL +
+            (API_URL.includes("?") ? "&" : "?") +
+            "_=" + Date.now();
+
+        const response = await fetch(url,{
             method:"GET",
             cache:"no-store",
             signal:controller.signal
@@ -986,8 +1003,10 @@ async function refreshStudents(showError = false){
                     <td colspan="5"
                         style="padding:40px;color:#d32f2f;">
 
-                        ❌ โหลดข้อมูลไม่สำเร็จ
+                        ❌ เชื่อมต่อฐานข้อมูลเกิน 4.5 วินาที
 
+                        <br>
+                        <small>กด “ลองใหม่” หรือเปิดหน้าอีกครั้ง เมื่อมีข้อมูลแคชหน้าจอจะแสดงทันที</small>
                         <br><br>
 
                         <button
