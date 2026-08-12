@@ -223,141 +223,309 @@ placeholder="ค้นหาชื่อนักเรียน..."
 <script>
 const user = JSON.parse(localStorage.getItem("loginUser"));
 
-if(!user){
+if (!user) {
     alert("กรุณาเข้าสู่ระบบ");
-    location.href="login.html";
+    location.href = "login.html";
 }
 
+// ==========================================
+// Google Apps Script API
+// ==========================================
+const API_URL = "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
 
-let data = JSON.parse(localStorage.getItem("assessments")) || [];
+let data = [];
 
 const table = document.getElementById("studentTable");
 const search = document.getElementById("search");
 
-function getLevel(score){
 
-    if(score >= 61){
+// ==========================================
+// แปลงคะแนนเป็นระดับ
+// ==========================================
+function getLevel(score) {
 
+    score = Number(score) || 0;
+
+    if (score >= 61) {
         return {
-            text:"ปกติ",
-            className:"normal"
+            text: "ปกติ",
+            className: "normal"
         };
 
-    }else if(score >= 41){
-
-        return{
-            text:"เฝ้าระวัง",
-            className:"watch"
+    } else if (score >= 41) {
+        return {
+            text: "เฝ้าระวัง",
+            className: "watch"
         };
 
-    }else if(score >= 21){
-
-        return{
-            text:"กลุ่มเสี่ยง",
-            className:"medium"
+    } else if (score >= 21) {
+        return {
+            text: "กลุ่มเสี่ยง",
+            className: "medium"
         };
 
-    }else{
-
-        return{
-            text:"วิกฤต",
-            className:"high"
+    } else {
+        return {
+            text: "วิกฤต",
+            className: "high"
         };
-
     }
-
 }
 
-function loadTable(list){
 
-    table.innerHTML="";
+// ==========================================
+// แสดงข้อความกำลังโหลด
+// ==========================================
+function showLoading() {
 
-    list.forEach((item,index)=>{
-
-        const level = getLevel(item.score);
-
-        const realIndex = data.indexOf(item);
-
-        table.innerHTML += `
-
-<tr>
-
-<td>${index+1}</td>
-
-<td>${item.name}</td>
-
-<td>${item.score}</td>
-
-<td class="${level.className}">
-${level.text}
-</td>
-
-<td>
-
-<button
-class="deleteBtn"
-onclick="deleteStudent(${realIndex})">
-ลบ
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-    });
-
+    table.innerHTML = `
+        <tr>
+            <td colspan="5" style="padding:40px; color:#1e88e5;">
+                ⏳ กำลังโหลดข้อมูลนักเรียน...
+            </td>
+        </tr>
+    `;
 }
 
-loadTable(data);
 
-search.addEventListener("keyup",()=>{
+// ==========================================
+// โหลดข้อมูลจาก Google Sheet
+// ==========================================
+async function loadStudents(retry = 0) {
 
-    const keyword = search.value.toLowerCase();
+    showLoading();
 
-    const result = data.filter(item=>{
+    const controller = new AbortController();
 
-        return item.name.toLowerCase().includes(keyword);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, 15000);
 
-    });
+    try {
 
-    loadTable(result);
+        const response = await fetch(API_URL, {
+            cache: "no-store",
+            signal: controller.signal
+        });
 
-});
+        clearTimeout(timeout);
 
-function deleteStudent(index){
+        if (!response.ok) {
+            throw new Error("HTTP error: " + response.status);
+        }
 
-    if(confirm("ต้องการลบข้อมูลนักเรียนหรือไม่?")){
+        const result = await response.json();
 
-        data.splice(index,1);
+        if (Array.isArray(result)) {
+            data = result;
 
-        localStorage.setItem(
-            "assessments",
-            JSON.stringify(data)
-        );
+        } else if (Array.isArray(result.data)) {
+            data = result.data;
+
+        } else {
+            throw new Error(
+                result.message || "รูปแบบข้อมูลจาก API ไม่ถูกต้อง"
+            );
+        }
+
+        console.log("ข้อมูลนักเรียน:", data);
 
         loadTable(data);
 
+    } catch (error) {
+
+        clearTimeout(timeout);
+
+        console.error("โหลดข้อมูลนักเรียนไม่สำเร็จ:", error);
+
+        // ลองใหม่อัตโนมัติสูงสุด 3 ครั้ง
+        if (retry < 2) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5" style="padding:40px; color:#f9a825;">
+                        กำลังเชื่อมต่อใหม่...
+                    </td>
+                </tr>
+            `;
+
+            setTimeout(() => {
+                loadStudents(retry + 1);
+            }, 2000);
+
+            return;
+        }
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5" style="padding:40px; color:#d32f2f;">
+                    ❌ โหลดข้อมูลไม่สำเร็จ
+                    <br><br>
+
+                    <button onclick="loadStudents()"
+                    style="
+                        background:#1e88e5;
+                        color:white;
+                        padding:10px 20px;
+                    ">
+                        ลองใหม่
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+
+// ==========================================
+// แสดงตาราง
+// ==========================================
+function loadTable(list) {
+
+    table.innerHTML = "";
+
+    if (list.length === 0) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5" style="padding:40px;">
+                    ไม่พบข้อมูลนักเรียน
+                </td>
+            </tr>
+        `;
+
+        return;
     }
 
-}
-if(user.role==="admin"){
-    document.getElementById("userRole").innerHTML="ผู้ดูแลระบบ";
-}else{
-    document.getElementById("userRole").innerHTML="ครู";
+    list.forEach((item, index) => {
+
+        const score = Number(item.score) || 0;
+
+        const level = getLevel(score);
+
+        const row = document.createElement("tr");
+
+        const numberCell = document.createElement("td");
+        numberCell.textContent = index + 1;
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = item.name || "-";
+
+        const scoreCell = document.createElement("td");
+        scoreCell.textContent = score;
+
+        const levelCell = document.createElement("td");
+        levelCell.textContent = level.text;
+        levelCell.className = level.className;
+
+        const actionCell = document.createElement("td");
+
+        const button = document.createElement("button");
+        button.textContent = "ดูข้อมูล";
+        button.className = "editBtn";
+
+        button.onclick = function() {
+            viewStudent(item);
+        };
+
+        actionCell.appendChild(button);
+
+        row.appendChild(numberCell);
+        row.appendChild(nameCell);
+        row.appendChild(scoreCell);
+        row.appendChild(levelCell);
+        row.appendChild(actionCell);
+
+        table.appendChild(row);
+    });
 }
 
-if(user.role!=="admin"){
-    document.getElementById("settingMenu").style.display="none";
+
+// ==========================================
+// ค้นหานักเรียน
+// ==========================================
+search.addEventListener("input", () => {
+
+    const keyword = search.value
+        .trim()
+        .toLowerCase();
+
+    const result = data.filter(item => {
+
+        const name = String(item.name || "")
+            .toLowerCase();
+
+        const studentId = String(item.studentId || "")
+            .toLowerCase();
+
+        const className = String(item.className || "")
+            .toLowerCase();
+
+        return (
+            name.includes(keyword) ||
+            studentId.includes(keyword) ||
+            className.includes(keyword)
+        );
+    });
+
+    loadTable(result);
+});
+
+
+// ==========================================
+// ดูข้อมูลนักเรียน
+// ==========================================
+function viewStudent(item) {
+
+    const level = getLevel(item.score);
+
+    alert(
+        "ชื่อนักเรียน: " + (item.name || "-") +
+        "\nรหัสนักเรียน: " + (item.studentId || "-") +
+        "\nชั้น: " + (item.className || "-") +
+        "\nห้อง: " + (item.room || "-") +
+        "\nคะแนน: " + (item.score || 0) +
+        "\nระดับ: " + level.text
+    );
 }
 
-function logout(){
+
+// ==========================================
+// สิทธิ์ผู้ใช้งาน
+// ==========================================
+if (user.role === "admin") {
+
+    document.getElementById("userRole").innerHTML =
+        "ผู้ดูแลระบบ";
+
+} else {
+
+    document.getElementById("userRole").innerHTML =
+        "ครู";
+}
+
+if (user.role !== "admin") {
+
+    document.getElementById("settingMenu").style.display =
+        "none";
+}
+
+
+// ==========================================
+// Logout
+// ==========================================
+function logout() {
 
     localStorage.removeItem("loginUser");
 
-    location.href="index.html";
+    location.href = "index.html";
 }
+
+
+// ==========================================
+// เริ่มโหลดข้อมูล
+// ==========================================
+loadStudents();
 
 </script>
 </body>
