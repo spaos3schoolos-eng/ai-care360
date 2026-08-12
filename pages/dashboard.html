@@ -283,6 +283,10 @@ if (!user) {
 const API_URL =
 "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
 
+const CACHE_KEY = "assessments";
+const CACHE_TIME_KEY = "assessments_cache_time";
+const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 นาที
+
 function percent(value,total){
     return total === 0 ? 0 : (value / total) * 100;
 }
@@ -291,17 +295,91 @@ function formatPercent(value){
     return value.toFixed(1) + "%";
 }
 
-async function loadDashboard(retry = 0) {
+function renderDashboard(data){
+    if (!Array.isArray(data)) return;
+
+    const total = data.length;
+    let normal = 0;
+    let watch = 0;
+    let medium = 0;
+    let high = 0;
+
+    data.forEach(item => {
+        const score = Number(item.score) || 0;
+
+        if (score >= 61) {
+            normal++;
+        } else if (score >= 41) {
+            watch++;
+        } else if (score >= 21) {
+            medium++;
+        } else {
+            high++;
+        }
+    });
+
+    const risk = medium + high;
+
+    const normalPct = percent(normal,total);
+    const watchPct = percent(watch,total);
+    const mediumPct = percent(medium,total);
+    const highPct = percent(high,total);
+    const riskPct = percent(risk,total);
+
+    document.getElementById("totalStudent").textContent = total;
+    document.getElementById("normalCount").textContent = normal;
+    document.getElementById("watchCount").textContent = watch;
+    document.getElementById("riskCount").textContent = risk;
+
+    document.getElementById("normalPercent").textContent = formatPercent(normalPct);
+    document.getElementById("watchPercent").textContent = formatPercent(watchPct);
+    document.getElementById("riskPercent").textContent = formatPercent(riskPct);
+
+    document.getElementById("normalChartText").textContent =
+        normal + " คน (" + formatPercent(normalPct) + ")";
+
+    document.getElementById("watchChartText").textContent =
+        watch + " คน (" + formatPercent(watchPct) + ")";
+
+    document.getElementById("mediumChartText").textContent =
+        medium + " คน (" + formatPercent(mediumPct) + ")";
+
+    document.getElementById("highChartText").textContent =
+        high + " คน (" + formatPercent(highPct) + ")";
+
+    requestAnimationFrame(() => {
+        document.getElementById("normalBar").style.width = normalPct + "%";
+        document.getElementById("watchBar").style.width = watchPct + "%";
+        document.getElementById("mediumBar").style.width = mediumPct + "%";
+        document.getElementById("highBar").style.width = highPct + "%";
+    });
+}
+
+function getCachedData(){
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+
+        const cached = JSON.parse(raw);
+        return Array.isArray(cached) ? cached : null;
+    } catch (e) {
+        console.warn("อ่าน cache ไม่สำเร็จ:", e);
+        return null;
+    }
+}
+
+async function refreshDashboard(){
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    // ไม่ปล่อยให้หน้าเว็บรอ API นานเกิน 4.5 วินาที
+    const timeout = setTimeout(() => controller.abort(), 4500);
 
     try {
         const response = await fetch(API_URL, {
-            cache:"no-store",
-            signal:controller.signal
+            method: "GET",
+            cache: "no-store",
+            signal: controller.signal
         });
-
-        clearTimeout(timeout);
 
         if (!response.ok) {
             throw new Error("HTTP error: " + response.status);
@@ -309,101 +387,57 @@ async function loadDashboard(retry = 0) {
 
         const result = await response.json();
 
-        let data;
+        const freshData = Array.isArray(result)
+            ? result
+            : (result && Array.isArray(result.data) ? result.data : null);
 
-        if (Array.isArray(result)) {
-            data = result;
-        } else if (result && Array.isArray(result.data)) {
-            data = result.data;
-        } else {
+        if (!freshData) {
             throw new Error(result?.message || "รูปแบบข้อมูล API ไม่ถูกต้อง");
         }
 
-        const total = data.length;
-        let normal = 0;
-        let watch = 0;
-        let medium = 0;
-        let high = 0;
+        // เก็บข้อมูลไว้ใช้ทันทีในทุกเมนู
+        localStorage.setItem(CACHE_KEY, JSON.stringify(freshData));
+        localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
 
-        data.forEach(item => {
-            const score = Number(item.score) || 0;
-
-            if (score >= 61) {
-                normal++;
-            } else if (score >= 41) {
-                watch++;
-            } else if (score >= 21) {
-                medium++;
-            } else {
-                high++;
-            }
-        });
-
-        const risk = medium + high;
-
-        const normalPct = percent(normal,total);
-        const watchPct = percent(watch,total);
-        const mediumPct = percent(medium,total);
-        const highPct = percent(high,total);
-        const riskPct = percent(risk,total);
-
-        document.getElementById("totalStudent").textContent = total;
-        document.getElementById("normalCount").textContent = normal;
-        document.getElementById("watchCount").textContent = watch;
-        document.getElementById("riskCount").textContent = risk;
-
-        document.getElementById("normalPercent").textContent =
-            formatPercent(normalPct);
-
-        document.getElementById("watchPercent").textContent =
-            formatPercent(watchPct);
-
-        document.getElementById("riskPercent").textContent =
-            formatPercent(riskPct);
-
-        document.getElementById("normalChartText").textContent =
-            normal + " คน (" + formatPercent(normalPct) + ")";
-
-        document.getElementById("watchChartText").textContent =
-            watch + " คน (" + formatPercent(watchPct) + ")";
-
-        document.getElementById("mediumChartText").textContent =
-            medium + " คน (" + formatPercent(mediumPct) + ")";
-
-        document.getElementById("highChartText").textContent =
-            high + " คน (" + formatPercent(highPct) + ")";
-
-        requestAnimationFrame(() => {
-            document.getElementById("normalBar").style.width =
-                normalPct + "%";
-
-            document.getElementById("watchBar").style.width =
-                watchPct + "%";
-
-            document.getElementById("mediumBar").style.width =
-                mediumPct + "%";
-
-            document.getElementById("highBar").style.width =
-                highPct + "%";
-        });
+        renderDashboard(freshData);
 
     } catch (error) {
-        clearTimeout(timeout);
-        console.error("โหลดข้อมูล Dashboard ไม่สำเร็จ:", error);
+        console.warn("อัปเดตข้อมูลเบื้องหลังไม่สำเร็จ:", error);
 
-        if (retry < 1) {
-            setTimeout(() => loadDashboard(retry + 1), 700);
-            return;
+        // ถ้าไม่มี cache จริง ๆ จึงแสดงสถานะผิดพลาด
+        if (!getCachedData()) {
+            document.getElementById("totalStudent").textContent = "!";
+            document.getElementById("normalCount").textContent = "!";
+            document.getElementById("watchCount").textContent = "!";
+            document.getElementById("riskCount").textContent = "!";
+
+            document.getElementById("normalPercent").textContent = "โหลดไม่สำเร็จ";
+            document.getElementById("watchPercent").textContent = "โหลดไม่สำเร็จ";
+            document.getElementById("riskPercent").textContent = "โหลดไม่สำเร็จ";
         }
+    } finally {
+        clearTimeout(timeout);
+    }
+}
 
-        document.getElementById("totalStudent").textContent = "!";
-        document.getElementById("normalCount").textContent = "!";
-        document.getElementById("watchCount").textContent = "!";
-        document.getElementById("riskCount").textContent = "!";
+function loadDashboard(){
+    // 1) แสดงข้อมูลเก่าทันที ไม่ต้องรอ Google Apps Script
+    const cached = getCachedData();
 
-        document.getElementById("normalPercent").textContent = "โหลดไม่สำเร็จ";
-        document.getElementById("watchPercent").textContent = "โหลดไม่สำเร็จ";
-        document.getElementById("riskPercent").textContent = "โหลดไม่สำเร็จ";
+    if (cached) {
+        renderDashboard(cached);
+    }
+
+    // 2) เช็กอายุ cache
+    const cacheTime = Number(localStorage.getItem(CACHE_TIME_KEY)) || 0;
+    const cacheAge = Date.now() - cacheTime;
+
+    // 3) ถ้า cache ยังใหม่ ใช้ข้อมูลเดิมก่อน แล้วรีเฟรชแบบ background
+    // ถ้า cache เก่า/ไม่มี cache ก็เรียก API ทันที
+    if (!cached || cacheAge > CACHE_MAX_AGE) {
+        refreshDashboard();
+    } else {
+        setTimeout(refreshDashboard, 100);
     }
 }
 
