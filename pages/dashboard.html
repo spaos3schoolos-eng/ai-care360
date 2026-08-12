@@ -3,354 +3,273 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>AI CARE 360 Dashboard</title>
 
 <style>
-
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:"Segoe UI",sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
 }
-
-body{
-
-background:#eef6ff;
-
-}
+body{ background:#eef6ff; }
 
 header{
-
-height:70px;
-
-background:#1e88e5;
-
-color:white;
-
-display:flex;
-
-align-items:center;
-
-justify-content:space-between;
-
-padding:0 30px;
-
-font-size:26px;
-
-font-weight:bold;
-
+    height:70px;
+    background:#1e88e5;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 30px;
+    font-size:26px;
+    font-weight:bold;
 }
 
-.container{
-
-display:flex;
-
-}
+.container{ display:flex; }
 
 .sidebar{
-
-width:250px;
-
-height:calc(100vh - 70px);
-
-background:white;
-
-box-shadow:3px 0 10px rgba(0,0,0,.1);
-
-padding:20px;
-
+    width:250px;
+    min-height:calc(100vh - 70px);
+    background:white;
+    box-shadow:3px 0 10px rgba(0,0,0,.1);
+    padding:20px;
 }
-
-.sidebar h3{
-
-margin-bottom:20px;
-
-color:#1e88e5;
-
-}
-
+.sidebar h3{ margin-bottom:20px; color:#1e88e5; }
 .sidebar a{
-
-display:block;
-
-padding:12px;
-
-margin-bottom:10px;
-
-text-decoration:none;
-
-color:#333;
-
-border-radius:10px;
-
-transition:.3s;
-
+    display:block;
+    padding:12px;
+    margin-bottom:10px;
+    text-decoration:none;
+    color:#333;
+    border-radius:10px;
+    transition:.3s;
 }
+.sidebar a:hover{ background:#1e88e5; color:white; }
 
-.sidebar a:hover{
-
-background:#1e88e5;
-
-color:white;
-
-}
-
-.main{
-
-flex:1;
-
-padding:30px;
-
-}
+.main{ flex:1; padding:30px; }
 
 .cards{
-
-display:grid;
-
-grid-template-columns:repeat(4,1fr);
-
-gap:20px;
-
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
 }
 
 .card{
-
-background:white;
-
-padding:25px;
-
-border-radius:20px;
-
-box-shadow:0 5px 20px rgba(0,0,0,.1);
-
-text-align:center;
-
+    background:white;
+    padding:25px 18px;
+    border-radius:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
+    text-align:center;
 }
-
 .card h2{
-
-font-size:40px;
-
-color:#1e88e5;
-
-margin-top:10px;
-
+    font-size:40px;
+    color:#1e88e5;
+    margin-top:10px;
 }
+.cardValue{
+    display:flex;
+    justify-content:center;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.cardPercent{
+    font-size:18px;
+    font-weight:bold;
+    color:#666;
+}
+#riskCount{ color:#e53935; }
+#riskPercent{ color:#e53935; }
 
 .chart{
+    margin-top:35px;
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
 
-margin-top:35px;
+.chartRow{ margin-top:20px; }
 
-background:white;
-
-padding:30px;
-
-border-radius:20px;
-
-box-shadow:0 5px 20px rgba(0,0,0,.1);
-
+.chartLabel{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    font-weight:600;
+}
+.chartValue{
+    font-weight:bold;
+    white-space:nowrap;
 }
 
 .bar{
-
-height:25px;
-
-margin:20px 0;
-
-border-radius:30px;
-
-background:#dbeeff;
-
-overflow:hidden;
-
+    height:25px;
+    margin-top:10px;
+    border-radius:30px;
+    background:#dbeeff;
+    overflow:hidden;
 }
-
-.fill1{
+.fill1,.fill2,.fill3,.fill4{
     height:100%;
     width:0%;
-    background:#42a5f5;
-    transition:0.5s;
+    transition:width .5s;
 }
-
-.fill2{
-    height:100%;
-    width:0%;
-    background:#66bb6a;
-    transition:0.5s;
-}
-
-.fill3{
-    height:100%;
-    width:0%;
-    background:#ffa726;
-    transition:0.5s;
-}
-
-.fill4{
-    height:100%;
-    width:0%;
-    background:#ef5350;
-    transition:0.5s;
-}
+.fill1{ background:#42a5f5; }
+.fill2{ background:#66bb6a; }
+.fill3{ background:#ffa726; }
+.fill4{ background:#ef5350; }
 
 .loading{
     display:flex;
     align-items:center;
     justify-content:center;
     gap:10px;
-    font-size:18px;
+    font-size:16px;
     color:#1e88e5;
 }
-
 .spinner{
     width:22px;
     height:22px;
     border:3px solid #dbeeff;
     border-top:3px solid #1e88e5;
     border-radius:50%;
-    animation:spin 0.8s linear infinite;
+    animation:spin .8s linear infinite;
 }
+@keyframes spin{ to{ transform:rotate(360deg); } }
 
-@keyframes spin{
-    100%{
-        transform:rotate(360deg);
-    }
-}
 footer{
-
-text-align:center;
-
-margin-top:30px;
-
-color:gray;
-
+    text-align:center;
+    margin-top:30px;
+    color:gray;
 }
 
+@media(max-width:1000px){
+    .cards{ grid-template-columns:repeat(2,1fr); }
+}
+@media(max-width:700px){
+    header{ padding:0 15px; font-size:20px; }
+    .sidebar{ width:180px; }
+    .main{ padding:15px; }
+    .cards{ grid-template-columns:1fr; }
+}
 </style>
-
 </head>
 
 <body>
 
 <header>
-
-<div>🤖 AI CARE 360</div>
-
-<div id="userRole"></div>
-
+    <div>🤖 AI CARE 360</div>
+    <div id="userRole"></div>
 </header>
 
 <div class="container">
 
 <div class="sidebar">
-
-<h3>เมนู</h3>
-
-<a href="dashboard.html">🏠 หน้าหลัก</a>
-
-<a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
-
-<a href="assessment.html">📝 แบบประเมิน</a>
-
-<a href="statistics.html">📊 สถิติ</a>
-
-<a href="risk.html">🚨 กลุ่มเสี่ยง</a>
-
-<a href="report.html">📄 รายงาน</a>
-
-<a href="setting.html" id="settingMenu">⚙️ ตั้งค่า</a>
-<a href="#" onclick="logout()">🚪 ออกจากระบบ</a>
-
-
+    <h3>เมนู</h3>
+    <a href="dashboard.html">🏠 หน้าหลัก</a>
+    <a href="student.html">👨‍🎓 ข้อมูลนักเรียน</a>
+    <a href="assessment.html">📝 แบบประเมิน</a>
+    <a href="statistics.html">📊 สถิติ</a>
+    <a href="risk.html">🚨 กลุ่มเสี่ยง</a>
+    <a href="report.html">📄 รายงาน</a>
+    <a href="setting.html" id="settingMenu">⚙️ ตั้งค่า</a>
+    <a href="#" onclick="logout()">🚪 ออกจากระบบ</a>
 </div>
 
 <div class="main">
 
 <div class="cards">
 
-<div class="card">
-นักเรียนทั้งหมด
-<h2 id="totalStudent">
-    <span class="loading">
-        <span class="spinner"></span>
-        กำลังโหลดข้อมูล
-    </span>
-</h2>
-</div>
+    <div class="card">
+        นักเรียนทั้งหมด
+        <h2 id="totalStudent">
+            <span class="loading"><span class="spinner"></span></span>
+        </h2>
+    </div>
 
-<div class="card">
-สุขภาพปกติ
-<h2 id="normalCount">
-    <span class="loading">
-        <span class="spinner"></span>
-        กำลังโหลดข้อมูล
-    </span>
-</h2>
-</div>
+    <div class="card">
+        สุขภาพปกติ
+        <div class="cardValue">
+            <h2 id="normalCount">
+                <span class="loading"><span class="spinner"></span></span>
+            </h2>
+            <span class="cardPercent" id="normalPercent">0%</span>
+        </div>
+    </div>
 
-<div class="card">
-เฝ้าระวัง
-<h2 id="watchCount">
-    <span class="loading">
-        <span class="spinner"></span>
-        กำลังโหลดข้อมูล
-    </span>
-</h2>
-</div>
+    <div class="card">
+        เฝ้าระวัง
+        <div class="cardValue">
+            <h2 id="watchCount">
+                <span class="loading"><span class="spinner"></span></span>
+            </h2>
+            <span class="cardPercent" id="watchPercent">0%</span>
+        </div>
+    </div>
 
-<div class="card">
-กลุ่มเสี่ยง + วิกฤต
-<h2 id="riskCount" style="color:red;">
-    <span class="loading">
-        <span class="spinner"></span>
-        กำลังโหลดข้อมูล
-    </span>
-</h2>
-</div>
+    <div class="card">
+        กลุ่มเสี่ยง + วิกฤต
+        <div class="cardValue">
+            <h2 id="riskCount">
+                <span class="loading"><span class="spinner"></span></span>
+            </h2>
+            <span class="cardPercent" id="riskPercent">0%</span>
+        </div>
+    </div>
+
 </div>
 
 <div class="chart">
 
 <h2>สรุปผลการประเมิน</h2>
 
-<br>
-
-ปกติ
-
-<div class="bar">
-    <div class="fill1" id="normalBar"></div>
+<div class="chartRow">
+    <div class="chartLabel">
+        <span>ปกติ</span>
+        <span class="chartValue" id="normalChartText">0 คน (0%)</span>
+    </div>
+    <div class="bar">
+        <div class="fill1" id="normalBar"></div>
+    </div>
 </div>
 
-เฝ้าระวัง
-
-<div class="bar">
-    <div class="fill2" id="watchBar"></div>
+<div class="chartRow">
+    <div class="chartLabel">
+        <span>เฝ้าระวัง</span>
+        <span class="chartValue" id="watchChartText">0 คน (0%)</span>
+    </div>
+    <div class="bar">
+        <div class="fill2" id="watchBar"></div>
+    </div>
 </div>
 
-กลุ่มเสี่ยง
-
-<div class="bar">
-    <div class="fill3" id="mediumBar"></div>
+<div class="chartRow">
+    <div class="chartLabel">
+        <span>กลุ่มเสี่ยง</span>
+        <span class="chartValue" id="mediumChartText">0 คน (0%)</span>
+    </div>
+    <div class="bar">
+        <div class="fill3" id="mediumBar"></div>
+    </div>
 </div>
 
-วิกฤต
-
-<div class="bar">
-    <div class="fill4" id="highBar"></div>
+<div class="chartRow">
+    <div class="chartLabel">
+        <span>วิกฤต</span>
+        <span class="chartValue" id="highChartText">0 คน (0%)</span>
+    </div>
+    <div class="bar">
+        <div class="fill4" id="highBar"></div>
+    </div>
 </div>
 
 </div>
 
-<footer>
-
-AI CARE 360 © 2026
-
-</footer>
+<footer>AI CARE 360 © 2026</footer>
 
 </div>
-
 </div>
 
 <script>
@@ -361,37 +280,46 @@ if (!user) {
     location.href = "login.html";
 }
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
+const API_URL =
+"https://script.google.com/macros/s/AKfycbwAeCxBYRIQheUJalCbRdklt7SH0gQmDmkkirMIVt3ylNoDwhkFnfZFxvdUbmk0TTOsjA/exec";
+
+function percent(value,total){
+    return total === 0 ? 0 : (value / total) * 100;
+}
+
+function formatPercent(value){
+    return value.toFixed(1) + "%";
+}
 
 async function loadDashboard(retry = 0) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     try {
-        const controller = new AbortController();
+        const response = await fetch(API_URL, {
+            cache:"no-store",
+            signal:controller.signal
+        });
 
-const timeout = setTimeout(() => {
-    controller.abort();
-}, 10000);
+        clearTimeout(timeout);
 
-const response = await fetch(API_URL, {
-    cache: "no-store",
-    signal: controller.signal
-});
-
-clearTimeout(timeout);
-            
         if (!response.ok) {
             throw new Error("HTTP error: " + response.status);
         }
 
         const result = await response.json();
 
-        const data = Array.isArray(result)
-            ? result
-            : (Array.isArray(result.data) ? result.data : []);
+        let data;
 
-        console.log("ข้อมูลจาก Google Sheet:", data);
+        if (Array.isArray(result)) {
+            data = result;
+        } else if (result && Array.isArray(result.data)) {
+            data = result.data;
+        } else {
+            throw new Error(result?.message || "รูปแบบข้อมูล API ไม่ถูกต้อง");
+        }
 
         const total = data.length;
-
         let normal = 0;
         let watch = 0;
         let medium = 0;
@@ -411,57 +339,78 @@ clearTimeout(timeout);
             }
         });
 
-        document.getElementById("totalStudent").innerHTML = total;
-        document.getElementById("normalCount").innerHTML = normal;
-        document.getElementById("watchCount").innerHTML = watch;
-        document.getElementById("riskCount").innerHTML = medium + high;
+        const risk = medium + high;
 
-        const normalPercent = total === 0 ? 0 : (normal / total) * 100;
-        const watchPercent = total === 0 ? 0 : (watch / total) * 100;
-        const mediumPercent = total === 0 ? 0 : (medium / total) * 100;
-        const highPercent = total === 0 ? 0 : (high / total) * 100;
+        const normalPct = percent(normal,total);
+        const watchPct = percent(watch,total);
+        const mediumPct = percent(medium,total);
+        const highPct = percent(high,total);
+        const riskPct = percent(risk,total);
 
-        document.getElementById("normalBar").style.width =
-            normalPercent + "%";
+        document.getElementById("totalStudent").textContent = total;
+        document.getElementById("normalCount").textContent = normal;
+        document.getElementById("watchCount").textContent = watch;
+        document.getElementById("riskCount").textContent = risk;
 
-        document.getElementById("watchBar").style.width =
-            watchPercent + "%";
+        document.getElementById("normalPercent").textContent =
+            formatPercent(normalPct);
 
-        document.getElementById("mediumBar").style.width =
-            mediumPercent + "%";
+        document.getElementById("watchPercent").textContent =
+            formatPercent(watchPct);
 
-        document.getElementById("highBar").style.width =
-            highPercent + "%";
+        document.getElementById("riskPercent").textContent =
+            formatPercent(riskPct);
+
+        document.getElementById("normalChartText").textContent =
+            normal + " คน (" + formatPercent(normalPct) + ")";
+
+        document.getElementById("watchChartText").textContent =
+            watch + " คน (" + formatPercent(watchPct) + ")";
+
+        document.getElementById("mediumChartText").textContent =
+            medium + " คน (" + formatPercent(mediumPct) + ")";
+
+        document.getElementById("highChartText").textContent =
+            high + " คน (" + formatPercent(highPct) + ")";
+
+        requestAnimationFrame(() => {
+            document.getElementById("normalBar").style.width =
+                normalPct + "%";
+
+            document.getElementById("watchBar").style.width =
+                watchPct + "%";
+
+            document.getElementById("mediumBar").style.width =
+                mediumPct + "%";
+
+            document.getElementById("highBar").style.width =
+                highPct + "%";
+        });
 
     } catch (error) {
-
+        clearTimeout(timeout);
         console.error("โหลดข้อมูล Dashboard ไม่สำเร็จ:", error);
 
-        // ถ้ายังลองไม่ครบ 3 ครั้ง
-        if (retry < 2) {
-            console.log("กำลังลองใหม่ ครั้งที่ " + (retry + 2));
-
-            setTimeout(() => {
-                loadDashboard(retry + 1);
-            }, 2000);
-
+        if (retry < 1) {
+            setTimeout(() => loadDashboard(retry + 1), 700);
             return;
         }
 
-        // ลองครบ 3 ครั้งแล้วยังไม่ได้
-        document.getElementById("totalStudent").innerHTML = "โหลดไม่สำเร็จ";
-        document.getElementById("normalCount").innerHTML = "โหลดไม่สำเร็จ";
-        document.getElementById("watchCount").innerHTML = "โหลดไม่สำเร็จ";
-        document.getElementById("riskCount").innerHTML = "โหลดไม่สำเร็จ";
+        document.getElementById("totalStudent").textContent = "!";
+        document.getElementById("normalCount").textContent = "!";
+        document.getElementById("watchCount").textContent = "!";
+        document.getElementById("riskCount").textContent = "!";
+
+        document.getElementById("normalPercent").textContent = "โหลดไม่สำเร็จ";
+        document.getElementById("watchPercent").textContent = "โหลดไม่สำเร็จ";
+        document.getElementById("riskPercent").textContent = "โหลดไม่สำเร็จ";
     }
 }
 
-loadDashboard();
-
 if (user.role === "admin") {
-    document.getElementById("userRole").innerHTML = "ผู้ดูแลระบบ";
+    document.getElementById("userRole").textContent = "ผู้ดูแลระบบ";
 } else {
-    document.getElementById("userRole").innerHTML = "ครู";
+    document.getElementById("userRole").textContent = "ครู";
 }
 
 if (user.role !== "admin") {
@@ -472,6 +421,8 @@ function logout() {
     localStorage.removeItem("loginUser");
     location.href = "index.html";
 }
+
+loadDashboard();
 </script>
 
 </body>
