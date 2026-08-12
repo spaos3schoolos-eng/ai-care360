@@ -195,6 +195,29 @@ overflow:hidden;
     transition:0.5s;
 }
 
+.loading{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-size:18px;
+    color:#1e88e5;
+}
+
+.spinner{
+    width:22px;
+    height:22px;
+    border:3px solid #dbeeff;
+    border-top:3px solid #1e88e5;
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+}
+
+@keyframes spin{
+    100%{
+        transform:rotate(360deg);
+    }
+}
 footer{
 
 text-align:center;
@@ -249,22 +272,42 @@ color:gray;
 
 <div class="card">
 นักเรียนทั้งหมด
-<h2 id="totalStudent">...</h2>
+<h2 id="totalStudent">
+    <span class="loading">
+        <span class="spinner"></span>
+        กำลังโหลดข้อมูล
+    </span>
+</h2>
 </div>
 
 <div class="card">
 สุขภาพปกติ
-<h2 id="normalCount">...</h2>
+<h2 id="normalCount">
+    <span class="loading">
+        <span class="spinner"></span>
+        กำลังโหลดข้อมูล
+    </span>
+</h2>
 </div>
 
 <div class="card">
 เฝ้าระวัง
-<h2 id="watchCount">...</h2>
+<h2 id="watchCount">
+    <span class="loading">
+        <span class="spinner"></span>
+        กำลังโหลดข้อมูล
+    </span>
+</h2>
 </div>
 
 <div class="card">
 กลุ่มเสี่ยง + วิกฤต
-<h2 id="riskCount" style="color:red;">...</h2>
+<h2 id="riskCount" style="color:red;">
+    <span class="loading">
+        <span class="spinner"></span>
+        กำลังโหลดข้อมูล
+    </span>
+</h2>
 </div>
 </div>
 
