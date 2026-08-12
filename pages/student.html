@@ -828,139 +828,140 @@ async function loadStudents(retry = 0){
 
 function loadTable(list){
 
+    if (!Array.isArray(list)) {
+        list = [];
+    }
 
-    table.innerHTML = "";
-
-
-    if(list.length === 0){
-
+    if (list.length === 0) {
 
         table.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="5"
-                    style="padding:40px;"
-                >
-
+                <td colspan="5"
+                    style="padding:40px;color:#777;">
                     ไม่พบข้อมูลนักเรียน
-
                 </td>
-
             </tr>
-
         `;
 
-
         return;
-
     }
 
 
-    list.forEach((item,index) => {
+    // สร้าง HTML ทั้งหมดก่อน แล้วใส่ตารางครั้งเดียว
+    const html = list.map((item, index) => {
+
+        const score = Number(item.score) || 0;
+
+        let riskClass = "risk-normal";
+
+        const risk = String(
+            item.riskLevel || ""
+        ).toLowerCase();
 
 
-        const score =
-            Number(item.score) || 0;
+        if (
+            risk.includes("วิกฤต") ||
+            risk.includes("สูงมาก")
+        ) {
+
+            riskClass = "risk-critical";
+
+        }
+        else if (
+            risk.includes("กลุ่มเสี่ยง") ||
+            risk.includes("สูง")
+        ) {
+
+            riskClass = "risk-high";
+
+        }
+        else if (
+            risk.includes("เฝ้าระวัง") ||
+            risk.includes("ปานกลาง")
+        ) {
+
+            riskClass = "risk-medium";
+
+        }
 
 
-        const level =
-            getLevel(score);
+        return `
+            <tr>
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    ${escapeHtml(item.name || "-")}
+                </td>
+
+                <td>
+                    ${score}
+                </td>
+
+                <td class="${riskClass}">
+                    ${escapeHtml(item.riskLevel || "-")}
+                </td>
+
+                <td>
+                    <button
+                        class="view-btn"
+                        data-student-id="${escapeHtml(item.studentId || "")}"
+data-date="${escapeHtml(item.date || "")}"
+                        ดูข้อมูล
+                    </button>
+                </td>
+
+            </tr>
+        `;
+
+    }).join("");
 
 
-        const row =
-            document.createElement("tr");
+    // เขียน DOM เพียงครั้งเดียว
+    table.innerHTML = html;
 
 
-        const numberCell =
-            document.createElement("td");
+    // ใช้ Event Delegation เพียงครั้งเดียว
+    if (!table.dataset.clickReady) {
 
-        numberCell.textContent =
-            index + 1;
+        table.addEventListener(
+            "click",
+            function(event) {
 
+                const button =
+                    event.target.closest(".view-btn");
 
+                if (!button) {
+                    return;
+                }
 
-        const nameCell =
-            document.createElement("td");
+                const studentId =
+    String(button.dataset.studentId || "");
 
-        nameCell.textContent =
-            item.name || "-";
+const date =
+    String(button.dataset.date || "");
 
+const item = data.find(student => {
 
+    return (
+        String(student.studentId || "") === studentId &&
+        String(student.date || "") === date
+    );
 
-        const scoreCell =
-            document.createElement("td");
+});
 
-        scoreCell.textContent =
-            score;
+if (!item) {
+    return;
+}
 
-
-
-        const levelCell =
-            document.createElement("td");
-
-        levelCell.textContent =
-            level.text;
-
-        levelCell.className =
-            level.className;
-
-
-
-        const actionCell =
-            document.createElement("td");
-
-
-        const viewButton =
-            document.createElement("button");
-
-
-        viewButton.textContent =
-            "ดูข้อมูล";
-
-
-        viewButton.className =
-            "editBtn";
-
-
-        viewButton.onclick = function(){
-
-            viewStudent(item);
-
-        };
-
-
-        actionCell.appendChild(
-            viewButton
+viewStudent(item);
+            }
         );
 
-
-        row.appendChild(
-            numberCell
-        );
-
-        row.appendChild(
-            nameCell
-        );
-
-        row.appendChild(
-            scoreCell
-        );
-
-        row.appendChild(
-            levelCell
-        );
-
-        row.appendChild(
-            actionCell
-        );
-
-
-        table.appendChild(row);
-
-    });
-
+        table.dataset.clickReady = "1";
+    }
 }
 
 
