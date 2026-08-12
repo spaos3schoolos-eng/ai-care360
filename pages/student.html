@@ -726,141 +726,77 @@ async function loadStudents(retry = 0){
 
     showLoading();
 
+    try {
 
-    const controller =
-        new AbortController();
+        const response = await fetch(
+            API_URL + "?t=" + Date.now(),
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
 
-
-    const timeout = setTimeout(() => {
-
-        controller.abort();
-
-    },15000);
-
-
-    try{
-
-
-        const response = await fetch(API_URL,{
-
-            cache:"no-store",
-
-            signal:controller.signal
-
-        });
-
-
-        clearTimeout(timeout);
-
-
-        if(!response.ok){
-
+        if (!response.ok) {
             throw new Error(
                 "HTTP error: " + response.status
             );
-
         }
 
+        const result = await response.json();
 
-        const result =
-            await response.json();
-
-
-        if(Array.isArray(result)){
+        if (Array.isArray(result)) {
 
             data = result;
 
-        }
-
-        else if(
+        } else if (
             result &&
             Array.isArray(result.data)
-        ){
+        ) {
 
             data = result.data;
 
-        }
-
-        else{
+        } else {
 
             throw new Error(
                 result?.message ||
                 "รูปแบบข้อมูลจาก API ไม่ถูกต้อง"
             );
-
         }
 
-
-        console.log(
-            "ข้อมูลนักเรียน:",
-            data
-        );
-
+        console.log("ข้อมูลนักเรียน:", data);
 
         loadTable(data);
 
-
-    }
-
-    catch(error){
-
-
-        clearTimeout(timeout);
-
+    } catch (error) {
 
         console.error(
             "โหลดข้อมูลไม่สำเร็จ:",
             error
         );
 
-
-        if(retry < 2){
-
+        // ลองเชื่อมต่อใหม่เพียง 1 ครั้ง
+        if (retry < 1) {
 
             table.innerHTML = `
-
                 <tr>
-
-                    <td
-                        colspan="5"
-                        style="
-                            padding:40px;
-                            color:#f9a825;
-                        "
-                    >
-
+                    <td colspan="5"
+                        style="padding:40px;color:#f9a825;">
                         ⏳ กำลังเชื่อมต่อใหม่...
-
                     </td>
-
                 </tr>
-
             `;
 
-
-            setTimeout(() => {
-
+            setTimeout(function () {
                 loadStudents(retry + 1);
-
-            },2000);
-
+            }, 500);
 
             return;
-
         }
 
-
         table.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="5"
-                    style="
-                        padding:40px;
-                        color:#d32f2f;
-                    "
-                >
+                <td colspan="5"
+                    style="padding:40px;color:#d32f2f;">
 
                     ❌ โหลดข้อมูลไม่สำเร็จ
 
@@ -872,23 +808,18 @@ async function loadStudents(retry = 0){
                             background:#1e88e5;
                             color:white;
                             padding:10px 20px;
-                        "
-                    >
-
+                            border:none;
+                            border-radius:6px;
+                            cursor:pointer;
+                        ">
                         ลองใหม่
-
                     </button>
 
                 </td>
-
             </tr>
-
         `;
-
     }
-
 }
-
 
 
 /* =========================================
